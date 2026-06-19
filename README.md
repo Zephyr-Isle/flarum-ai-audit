@@ -24,6 +24,16 @@ php flarum migrate
 php flarum cache:clear
 ```
 
+如果你修改了扩展前端源码，请重新构建并清理缓存：
+
+```bash
+cd js
+npm install
+npm run build
+cd ..
+php flarum cache:clear
+```
+
 ## 配置项
 
 后台 → 扩展 → AI Audit：
@@ -45,6 +55,13 @@ php flarum cache:clear
 - `is_approved` 字段并非所有安装都存在；扩展会在运行时检测字段是否存在，避免数据库报错。
 - 未配置 `api_key` 时不会调用 LLM，仅使用本地信号评分。
 
+## 运行行为
+
+- 审核日志列表、详情、重试接口均要求已登录且具备对应后台权限。
+- 列表查询参数会自动收敛：`page.limit` 最大 `100`，`page.offset` 最小 `0`。
+- `pending` 或 `retrying` 状态的日志不可重复重试，避免重复入队。
+- 图片快照下载仅允许外部 `http/https` 地址，默认阻止 `localhost`、内网 IP、保留地址等高风险目标。
+
 ## 权限
 
 后台权限页可配置：
@@ -60,3 +77,9 @@ php flarum cache:clear
 - `GET /api/ai-audit/logs/{id}`
 - `POST /api/ai-audit/logs/{id}/retry`
 
+## 测试
+
+```bash
+composer install
+composer test
+```

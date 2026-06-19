@@ -7,13 +7,13 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ZephyrIsle\AiAudit\Model\AuditLog;
+use ZephyrIsle\AiAudit\Support\RequestActor;
 
 class ShowAuditLogController implements RequestHandlerInterface
 {
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $actor = $request->getAttribute('actor');
-        $actor->assertCan('zephyrisle-ai-audit.viewAuditLogs');
+        $actor = RequestActor::require($request, 'zephyrisle-ai-audit.viewAuditLogs');
 
         $id = $request->getAttribute('id');
         $log = AuditLog::findOrFail($id);
@@ -48,4 +48,3 @@ class ShowAuditLogController implements RequestHandlerInterface
         ]);
     }
 }
-

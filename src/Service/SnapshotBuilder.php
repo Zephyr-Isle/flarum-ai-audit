@@ -9,6 +9,7 @@ use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\User;
 use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
+use ZephyrIsle\AiAudit\Support\NetworkUrlGuard;
 
 class SnapshotBuilder
 {
@@ -142,6 +143,11 @@ class SnapshotBuilder
 
     private function downloadImageAsDataUri(string $url): ?string
     {
+        if (!NetworkUrlGuard::isSafeExternalHttpUrl($url)) {
+            $this->logger->debug('[AI Audit] blocked unsafe image url', ['url' => $url]);
+            return null;
+        }
+
         $timeout = 8;
         $client = new Client([
             'timeout' => $timeout,
@@ -171,4 +177,3 @@ class SnapshotBuilder
         }
     }
 }
-

@@ -2,54 +2,47 @@
 
 namespace ZephyrIsle\AiAudit\Api\Controller;
 
-use Illuminate\Support\Arr;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ZephyrIsle\AiAudit\Model\AuditLog;
+use ZephyrIsle\AiAudit\Support\AuditLogListQuery;
+use ZephyrIsle\AiAudit\Support\RequestActor;
 
 class ListAuditLogsController implements RequestHandlerInterface
 {
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $actor = $request->getAttribute('actor');
-        $actor->assertCan('zephyrisle-ai-audit.viewAuditLogs');
-
-        $params = $request->getQueryParams();
-        $filters = Arr::get($params, 'filter', []);
-        $sort = Arr::get($params, 'sort', '-createdAt');
-        $limit = (int) Arr::get($params, 'page.limit', 20);
-        $offset = (int) Arr::get($params, 'page.offset', 0);
+        $actor = RequestActor::require($request, 'zephyrisle-ai-audit.viewAuditLogs');
+        $query = AuditLogListQuery::fromArray($request->getQueryParams());
 
         $q = AuditLog::query();
 
-        if (!empty($filters['subjectType'])) {
-            $q->where('subject_type', $filters['subjectType']);
+        if ($query->filters['subjectType'] !== null) {
+            $q->where('subject_type', $query->filters['subjectType']);
         }
-        if (!empty($filters['status'])) {
-            $q->where('status', $filters['status']);
+        if ($query->filters['status'] !== null) {
+            $q->where('status', $query->filters['status']);
         }
-        if (!empty($filters['ownerId'])) {
-            $q->where('owner_id', (int) $filters['ownerId']);
+        if ($query->filters['ownerId'] !== null) {
+            $q->where('owner_id', $query->filters['ownerId']);
         }
-        if (!empty($filters['minRisk'])) {
-            $q->where('risk', '>=', (float) $filters['minRisk']);
+        if ($query->filters['minRisk'] !== null) {
+            $q->where('risk', '>=', $query->filters['minRisk']);
         }
 
-        $sortField = ltrim((string) $sort, '-+');
-        $direction = str_starts_with((string) $sort, '-') ? 'desc' : 'asc';
         $map = [
             'createdAt' => 'created_at',
             'risk' => 'risk',
             'status' => 'status',
         ];
-        if (isset($map[$sortField])) {
-            $q->orderBy($map[$sortField], $direction);
+        if (isset($map[$query->sort])) {
+            $q->orderBy($map[$query->sort], $query->direction);
         }
 
-        $total = $q->count();
-        $rows = $q->skip($offset)->take($limit)->get();
+        $total = (clone $q)->count();
+        $rows = $q->skip($query->offset)->take($query->limit)->get();
 
         $data = $rows->map(function (AuditLog $log) use ($actor) {
             return $this->serialize($log, $actor);
@@ -88,4 +81,3 @@ class ListAuditLogsController implements RequestHandlerInterface
         ];
     }
 }
-

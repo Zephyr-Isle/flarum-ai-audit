@@ -7,10 +7,21 @@
         "flarum/core": "^1.8 || ^2.0",
         "guzzlehttp/guzzle": "^7.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    },
     "autoload": {
         "psr-4": {
             "ZephyrIsle\\AiAudit\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ZephyrIsle\\AiAudit\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --colors=never"
     },
     "extra": {
         "flarum-extension": {

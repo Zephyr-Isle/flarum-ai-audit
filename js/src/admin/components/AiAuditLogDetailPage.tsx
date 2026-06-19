@@ -4,6 +4,7 @@ import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
 import Button from 'flarum/common/components/Button';
 import m from 'mithril';
 import type Mithril from 'mithril';
+import { apiUrl, showRequestError } from '../utils/api';
 
 type ShowResponse = {
   data: { id: string; attributes: Record<string, any> };
@@ -11,6 +12,7 @@ type ShowResponse = {
 
 export default class AiAuditLogDetailPage extends Page {
   loading = false;
+  retrying = false;
   id = '';
   log: ShowResponse['data'] | null = null;
 
@@ -37,7 +39,12 @@ export default class AiAuditLogDetailPage extends Page {
                 )}
                 {this.log.attributes.status === 'failed'
                   ? Button.component(
-                      { className: 'Button Button--small Button--primary', onclick: () => this.retry() },
+                      {
+                        className: 'Button Button--small Button--primary',
+                        loading: this.retrying,
+                        disabled: this.retrying,
+                        onclick: () => this.retry(),
+                      },
                       app.translator.trans('zephyrisle-ai-audit.admin.audit_log.retry')
                     )
                   : null}
@@ -95,10 +102,13 @@ export default class AiAuditLogDetailPage extends Page {
     this.loading = true;
     m.redraw();
 
-    const url = app.forum.attribute('apiUrl') + `/ai-audit/logs/${this.id}`;
+    const url = apiUrl(`/ai-audit/logs/${this.id}`);
     try {
       const resp = (await app.request({ method: 'GET', url })) as ShowResponse;
       this.log = resp.data || null;
+    } catch (error) {
+      this.log = null;
+      showRequestError(error, 'zephyrisle-ai-audit.admin.audit_log.errors.load');
     } finally {
       this.loading = false;
       m.redraw();
@@ -106,9 +116,19 @@ export default class AiAuditLogDetailPage extends Page {
   }
 
   async retry() {
-    const url = app.forum.attribute('apiUrl') + `/ai-audit/logs/${this.id}/retry`;
-    await app.request({ method: 'POST', url });
-    await this.load();
+    const url = apiUrl(`/ai-audit/logs/${this.id}/retry`);
+    this.retrying = true;
+    m.redraw();
+
+    try {
+      await app.request({ method: 'POST', url });
+      app.alerts.show({ type: 'success' }, app.translator.trans('zephyrisle-ai-audit.admin.audit_logs.messages.retry_started'));
+      await this.load();
+    } catch (error) {
+      showRequestError(error, 'zephyrisle-ai-audit.admin.audit_log.errors.retry');
+    } finally {
+      this.retrying = false;
+      m.redraw();
+    }
   }
 }
-

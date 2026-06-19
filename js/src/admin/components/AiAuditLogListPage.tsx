@@ -5,6 +5,7 @@ import LinkButton from 'flarum/common/components/LinkButton';
 import Button from 'flarum/common/components/Button';
 import m from 'mithril';
 import type Mithril from 'mithril';
+import { apiUrl, showRequestError } from '../utils/api';
 
 type ListResponse = {
   data: Array<{ id: string; attributes: Record<string, any> }>;
@@ -13,6 +14,7 @@ type ListResponse = {
 
 export default class AiAuditLogListPage extends Page {
   loading = false;
+  retryingId: string | null = null;
   logs: ListResponse['data'] = [];
   total = 0;
   limit = 20;
@@ -92,7 +94,12 @@ export default class AiAuditLogListPage extends Page {
                         <td>
                           {canRetry
                             ? Button.component(
-                                { className: 'Button Button--small', onclick: () => this.retry(row.id) },
+                                {
+                                  className: 'Button Button--small',
+                                  disabled: this.retryingId === row.id,
+                                  loading: this.retryingId === row.id,
+                                  onclick: () => this.retry(row.id),
+                                },
                                 app.translator.trans('zephyrisle-ai-audit.admin.audit_logs.retry')
                               )
                             : null}
@@ -144,7 +151,7 @@ export default class AiAuditLogListPage extends Page {
     this.loading = true;
     m.redraw();
 
-    const url = app.forum.attribute('apiUrl') + '/ai-audit/logs';
+    const url = apiUrl('/ai-audit/logs');
     const filter: Record<string, string> = {};
     if (this.status) filter.status = this.status;
 
@@ -157,6 +164,10 @@ export default class AiAuditLogListPage extends Page {
 
       this.logs = resp.data || [];
       this.total = resp.meta?.total || 0;
+    } catch (error) {
+      this.logs = [];
+      this.total = 0;
+      showRequestError(error, 'zephyrisle-ai-audit.admin.audit_logs.errors.load');
     } finally {
       this.loading = false;
       m.redraw();
@@ -164,9 +175,19 @@ export default class AiAuditLogListPage extends Page {
   }
 
   async retry(id: string) {
-    const url = app.forum.attribute('apiUrl') + `/ai-audit/logs/${id}/retry`;
-    await app.request({ method: 'POST', url });
-    await this.load();
+    const url = apiUrl(`/ai-audit/logs/${id}/retry`);
+    this.retryingId = id;
+    m.redraw();
+
+    try {
+      await app.request({ method: 'POST', url });
+      app.alerts.show({ type: 'success' }, app.translator.trans('zephyrisle-ai-audit.admin.audit_logs.messages.retry_started'));
+      await this.load();
+    } catch (error) {
+      showRequestError(error, 'zephyrisle-ai-audit.admin.audit_logs.errors.retry');
+    } finally {
+      this.retryingId = null;
+      m.redraw();
+    }
   }
 }
-

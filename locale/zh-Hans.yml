@@ -28,6 +28,11 @@ zephyrisle-ai-audit:
       title: AI 审核日志
       filter_status: 状态筛选
       filter_all: 全部
+      messages:
+        retry_started: 已加入重试队列
+      errors:
+        load: 加载审核日志失败
+        retry: 重试审核失败
       col_subject: 对象
       col_owner: 作者
       col_risk: 风险
@@ -44,6 +49,9 @@ zephyrisle-ai-audit:
       title: "审核日志 #{id}"
       back: 返回
       retry: 重试
+      errors:
+        load: 加载审核日志详情失败
+        retry: 重试审核失败
       snapshot: 快照
       analysis: 分析
       not_found: 未找到

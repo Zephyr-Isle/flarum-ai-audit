@@ -37,7 +37,10 @@ class AuditClient
         ];
 
         $reviewThreshold = $this->clamp01((float) $this->settings->get('zephyrisle.ai-audit.review_threshold', 0.55));
-        $actionThreshold = $this->clamp01((float) $this->settings->get('zephyrisle.ai-audit.action_threshold', 0.75));
+        $actionThreshold = max(
+            $reviewThreshold,
+            $this->clamp01((float) $this->settings->get('zephyrisle.ai-audit.action_threshold', 0.75))
+        );
 
         $riskBase = (float) $signals['risk'];
         $severityBase = (int) $signals['severity'];
@@ -208,8 +211,8 @@ class AuditClient
     private function buildPayload(array $messages): array
     {
         $model = (string) $this->settings->get('zephyrisle.ai-audit.model', 'gpt-4o-mini');
-        $temperature = (float) $this->settings->get('zephyrisle.ai-audit.temperature', 0.2);
-        $maxTokens = (int) $this->settings->get('zephyrisle.ai-audit.max_tokens', 800);
+        $temperature = max(0.0, min(2.0, (float) $this->settings->get('zephyrisle.ai-audit.temperature', 0.2)));
+        $maxTokens = max(1, min(4096, (int) $this->settings->get('zephyrisle.ai-audit.max_tokens', 800)));
 
         return [
             'model' => $model,
@@ -396,4 +399,3 @@ PROMPT;
         return max(0.0, min(0.35, $score));
     }
 }
-

@@ -9,6 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ZephyrIsle\AiAudit\Job\AuditJob;
 use ZephyrIsle\AiAudit\Model\AuditLog;
+use ZephyrIsle\AiAudit\Support\RequestActor;
 
 class RetryAuditController implements RequestHandlerInterface
 {
@@ -18,11 +19,21 @@ class RetryAuditController implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $actor = $request->getAttribute('actor');
-        $actor->assertCan('zephyrisle-ai-audit.retryAudit');
+        $actor = RequestActor::require($request, 'zephyrisle-ai-audit.retryAudit');
 
         $id = $request->getAttribute('id');
         $log = AuditLog::findOrFail($id);
+
+        if (in_array($log->status, ['pending', 'retrying'], true)) {
+            return new JsonResponse([
+                'errors' => [[
+                    'status' => '409',
+                    'code' => 'audit_log_retry_conflict',
+                    'detail' => 'Audit is already queued or running.',
+                ]],
+            ], 409);
+        }
+
         $log->markRetrying();
 
         $changes = $log->analysis['job']['changes'] ?? [];

@@ -28,6 +28,11 @@ zephyrisle-ai-audit:
       title: AI Audit Logs
       filter_status: Filter by status
       filter_all: All
+      messages:
+        retry_started: Retry queued
+      errors:
+        load: Failed to load audit logs
+        retry: Failed to retry audit
       col_subject: Subject
       col_owner: Owner
       col_risk: Risk
@@ -44,6 +49,9 @@ zephyrisle-ai-audit:
       title: "Audit Log #{id}"
       back: Back
       retry: Retry
+      errors:
+        load: Failed to load audit log
+        retry: Failed to retry audit
       snapshot: Snapshot
       analysis: Analysis
       not_found: Not found
