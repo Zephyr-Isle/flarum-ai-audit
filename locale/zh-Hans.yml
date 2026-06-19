@@ -1,0 +1,53 @@
+zephyrisle-ai-audit:
+  admin:
+    settings:
+      api_section: API 配置
+      api_endpoint: API 端点
+      api_key: API 密钥
+      model: 模型
+      temperature: 温度
+      max_tokens: 最大输出 Token
+      timeout: 超时（秒）
+      system_prompt: 系统提示词
+      behavior_section: 行为设置
+      pre_approve_enabled: 启用先审后放
+      download_images: 下载图片用于识别
+      review_threshold: 人工复核阈值
+      action_threshold: 自动处理阈值
+      suspend_days: 封禁时长（天）
+
+    permissions:
+      view_audit_logs: 查看审核日志
+      view_full_audit_logs: 查看完整日志（含分析详情）
+      retry_audit: 重试审核
+      bypass_audit: 绕过 AI 审核
+      bypass_pre_approve: 绕过先审后放
+
+    audit_logs:
+      nav: AI 审核
+      title: AI 审核日志
+      filter_status: 状态筛选
+      filter_all: 全部
+      col_subject: 对象
+      col_owner: 作者
+      col_risk: 风险
+      col_actions: 动作
+      col_status: 状态
+      col_created: 创建时间
+      col_ops: 操作
+      retry: 重试
+      prev: 上一页
+      next: 下一页
+      page: "{current}/{total} 页"
+
+    audit_log:
+      title: "审核日志 #{id}"
+      back: 返回
+      retry: 重试
+      snapshot: 快照
+      analysis: 分析
+      not_found: 未找到
+
+  flags:
+    reason: AI 审核需要复核
+    detail_review: 进入人工复核队列

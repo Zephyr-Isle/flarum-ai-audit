@@ -1,0 +1,53 @@
+zephyrisle-ai-audit:
+  admin:
+    settings:
+      api_section: API Configuration
+      api_endpoint: API Endpoint
+      api_key: API Key
+      model: Model
+      temperature: Temperature
+      max_tokens: Max Output Tokens
+      timeout: Timeout (seconds)
+      system_prompt: System Prompt
+      behavior_section: Behavior
+      pre_approve_enabled: Enable pre-approval
+      download_images: Download images
+      review_threshold: Review threshold
+      action_threshold: Action threshold
+      suspend_days: Suspend days
+
+    permissions:
+      view_audit_logs: View audit logs
+      view_full_audit_logs: View full logs
+      retry_audit: Retry audits
+      bypass_audit: Bypass AI audit
+      bypass_pre_approve: Bypass pre-approval
+
+    audit_logs:
+      nav: AI Audit
+      title: AI Audit Logs
+      filter_status: Filter by status
+      filter_all: All
+      col_subject: Subject
+      col_owner: Owner
+      col_risk: Risk
+      col_actions: Actions
+      col_status: Status
+      col_created: Created
+      col_ops: Operations
+      retry: Retry
+      prev: Prev
+      next: Next
+      page: "Page {current}/{total}"
+
+    audit_log:
+      title: "Audit Log #{id}"
+      back: Back
+      retry: Retry
+      snapshot: Snapshot
+      analysis: Analysis
+      not_found: Not found
+
+  flags:
+    reason: AI audit needs review
+    detail_review: Added to manual review queue

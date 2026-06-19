@@ -1,0 +1,31 @@
+{
+    "name": "zephyrisle/flarum-ai-audit",
+    "description": "AI-assisted content audit for Flarum using OpenAI-compatible chat APIs",
+    "type": "flarum-extension",
+    "license": "MIT",
+    "require": {
+        "flarum/core": "^1.8 || ^2.0",
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ZephyrIsle\\AiAudit\\": "src/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "AI Audit",
+            "category": "moderation",
+            "optional-dependencies": [
+                "flarum/flags"
+            ],
+            "icon": {
+                "name": "fas fa-shield-alt",
+                "color": "#ffffff",
+                "backgroundColor": "#4c6ef5"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
