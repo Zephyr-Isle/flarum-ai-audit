@@ -14,14 +14,7 @@ type ErrorLike = {
 };
 
 export function apiUrl(path: string): string {
-  const adminApp = app as typeof app & {
-    attribute?: (name: string) => string | undefined;
-    forum?: { attribute?: (name: string) => string | undefined };
-  };
-
-  const base = adminApp.attribute?.('apiUrl') || adminApp.forum?.attribute?.('apiUrl') || '/api';
-
-  return `${base}${path}`;
+  return `/api${path}`;
 }
 
 export function showRequestError(error: unknown, fallbackKey: string): void {
