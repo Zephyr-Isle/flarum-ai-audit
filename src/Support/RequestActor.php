@@ -2,22 +2,34 @@
 
 namespace ZephyrIsle\AiAudit\Support;
 
-use Flarum\User\Exception\NotAuthenticatedException;
 use Flarum\User\User;
-use Psr\Http\Message\ServerRequestInterface;
+use Laminas\Diactoros\Response\JsonResponse;
 
 class RequestActor
 {
-    public static function require(ServerRequestInterface $request, string $ability): User
+    public static function resolve(mixed $actor): ?User
     {
-        $actor = $request->getAttribute('actor');
+        return $actor instanceof User ? $actor : null;
+    }
 
-        if (!$actor instanceof User) {
-            throw new NotAuthenticatedException();
-        }
+    public static function notAuthenticatedResponse(): JsonResponse
+    {
+        return self::errorResponse(401, 'not_authenticated', 'Authentication required.');
+    }
 
-        $actor->assertCan($ability);
+    public static function permissionDeniedResponse(): JsonResponse
+    {
+        return self::errorResponse(403, 'permission_denied', 'You do not have permission to perform this action.');
+    }
 
-        return $actor;
+    private static function errorResponse(int $status, string $code, string $detail): JsonResponse
+    {
+        return new JsonResponse([
+            'errors' => [[
+                'status' => (string) $status,
+                'code' => $code,
+                'detail' => $detail,
+            ]],
+        ], $status);
     }
 }

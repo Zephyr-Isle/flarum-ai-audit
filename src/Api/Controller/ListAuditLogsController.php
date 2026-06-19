@@ -14,7 +14,14 @@ class ListAuditLogsController implements RequestHandlerInterface
 {
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $actor = RequestActor::require($request, 'zephyrisle-ai-audit.viewAuditLogs');
+        $actor = RequestActor::resolve($request->getAttribute('actor'));
+        if (!$actor) {
+            return RequestActor::notAuthenticatedResponse();
+        }
+        if (!$actor->can('zephyrisle-ai-audit.viewAuditLogs')) {
+            return RequestActor::permissionDeniedResponse();
+        }
+
         $query = AuditLogListQuery::fromArray($request->getQueryParams());
 
         $q = AuditLog::query();

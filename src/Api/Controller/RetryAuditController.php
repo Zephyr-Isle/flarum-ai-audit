@@ -19,7 +19,13 @@ class RetryAuditController implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $actor = RequestActor::require($request, 'zephyrisle-ai-audit.retryAudit');
+        $actor = RequestActor::resolve($request->getAttribute('actor'));
+        if (!$actor) {
+            return RequestActor::notAuthenticatedResponse();
+        }
+        if (!$actor->can('zephyrisle-ai-audit.retryAudit')) {
+            return RequestActor::permissionDeniedResponse();
+        }
 
         $id = $request->getAttribute('id');
         $log = AuditLog::findOrFail($id);
