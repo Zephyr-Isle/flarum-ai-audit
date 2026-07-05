@@ -1,1 +1,1 @@
-export { default as extend } from './src/forum';
+import './src/forum';

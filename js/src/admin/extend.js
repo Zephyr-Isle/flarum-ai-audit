@@ -7,6 +7,7 @@ const t = (key) => app.translator.trans(key, {}, true);
 export default [
   ...commonExtend,
   new Extend.Admin()
+    .section('zephyrisle-ai-audit', () => t('zephyrisle-ai-audit.admin.settings.api_section'), 100)
     .setting(
       () => ({
         setting: 'zephyrisle.ai-audit.api_endpoint',
@@ -14,6 +15,7 @@ export default [
         type: 'text',
         default: 'https://api.openai.com/v1',
       }),
+      'zephyrisle-ai-audit',
       190
     )
     .setting(
@@ -22,6 +24,7 @@ export default [
         label: t('zephyrisle-ai-audit.admin.settings.api_key'),
         type: 'password',
       }),
+      'zephyrisle-ai-audit',
       189
     )
     .setting(
@@ -31,6 +34,7 @@ export default [
         type: 'text',
         default: 'gpt-4o-mini',
       }),
+      'zephyrisle-ai-audit',
       188
     )
     .setting(
@@ -43,6 +47,7 @@ export default [
         step: 0.1,
         default: 0.2,
       }),
+      'zephyrisle-ai-audit',
       187
     )
     .setting(
@@ -54,6 +59,7 @@ export default [
         max: 4096,
         default: 800,
       }),
+      'zephyrisle-ai-audit',
       186
     )
     .setting(
@@ -65,6 +71,7 @@ export default [
         max: 300,
         default: 30,
       }),
+      'zephyrisle-ai-audit',
       185
     )
     .setting(
@@ -73,14 +80,17 @@ export default [
         label: t('zephyrisle-ai-audit.admin.settings.system_prompt'),
         type: 'textarea',
       }),
+      'zephyrisle-ai-audit',
       184
     )
+    .section('zephyrisle-ai-audit-behavior', () => t('zephyrisle-ai-audit.admin.settings.behavior_section'), 99)
     .setting(
       () => ({
         setting: 'zephyrisle.ai-audit.pre_approve_enabled',
         label: t('zephyrisle-ai-audit.admin.settings.pre_approve_enabled'),
         type: 'boolean',
       }),
+      'zephyrisle-ai-audit-behavior',
       119
     )
     .setting(
@@ -90,6 +100,7 @@ export default [
         type: 'boolean',
         default: true,
       }),
+      'zephyrisle-ai-audit-behavior',
       118
     )
     .setting(
@@ -101,6 +112,7 @@ export default [
         max: 30,
         default: 8,
       }),
+      'zephyrisle-ai-audit-behavior',
       117
     )
     .setting(
@@ -113,6 +125,7 @@ export default [
         step: 0.05,
         default: 0.55,
       }),
+      'zephyrisle-ai-audit-behavior',
       116
     )
     .setting(
@@ -125,6 +138,7 @@ export default [
         step: 0.05,
         default: 0.75,
       }),
+      'zephyrisle-ai-audit-behavior',
       115
     )
     .setting(
@@ -136,6 +150,7 @@ export default [
         max: 365,
         default: 7,
       }),
+      'zephyrisle-ai-audit-behavior',
       114
     )
     .permission(
