@@ -1,6 +1,7 @@
 zephyrisle-ai-audit:
   admin:
     settings:
+      title: AI 审计设置
       api_section: API 配置
       api_endpoint: API 端点
       api_key: API 密钥
@@ -16,6 +17,10 @@ zephyrisle-ai-audit:
       review_threshold: 人工复核阈值
       action_threshold: 自动处理阈值
       suspend_days: 封禁时长（天）
+
+    nav:
+      settings: AI 审计设置
+      logs: AI 审计日志
 
     permissions:
       view_audit_logs: 查看审核日志

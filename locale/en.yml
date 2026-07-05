@@ -1,6 +1,7 @@
 zephyrisle-ai-audit:
   admin:
     settings:
+      title: AI Audit Settings
       api_section: API Configuration
       api_endpoint: API Endpoint
       api_key: API Key
@@ -16,6 +17,10 @@ zephyrisle-ai-audit:
       review_threshold: Review threshold
       action_threshold: Action threshold
       suspend_days: Suspend days
+
+    nav:
+      settings: AI Audit Settings
+      logs: AI Audit Logs
 
     permissions:
       view_audit_logs: View audit logs

@@ -1,0 +1,96 @@
+{
+  "version": 3,
+  "lastModified": "2026-07-05T08:23:56.594Z",
+  "entries": [
+    {
+      "id": "423b5863-3614-43fb-a07f-25c7fa1943b1",
+      "category": "general",
+      "layer": "project",
+      "content": "ClassmateHub is a Flutter app designed to adapt to Flarum forum software and its PHP extensions",
+      "createdAt": "2026-07-05T08:23:56.563Z",
+      "updatedAt": "2026-07-05T08:23:56.563Z",
+      "lastRecalledAt": null,
+      "recallCount": 0,
+      "sourceConversationId": "a56cbb53-6c4c-4f0d-b672-d9b96c21cc84",
+      "tags": [
+        "auto-extracted",
+        "reflection"
+      ],
+      "archived": false,
+      "branch": null,
+      "directoryScope": null
+    },
+    {
+      "id": "3561a773-eaf8-4ef8-95d2-bb5dd81ee6a0",
+      "category": "general",
+      "layer": "project",
+      "content": "EXTENSIONS.md documents which Flarum extensions are supported, including core features like flarum/likes (Likes) which is fully adapted",
+      "createdAt": "2026-07-05T08:23:56.572Z",
+      "updatedAt": "2026-07-05T08:23:56.572Z",
+      "lastRecalledAt": null,
+      "recallCount": 0,
+      "sourceConversationId": "a56cbb53-6c4c-4f0d-b672-d9b96c21cc84",
+      "tags": [
+        "auto-extracted",
+        "reflection"
+      ],
+      "archived": false,
+      "branch": null,
+      "directoryScope": null
+    },
+    {
+      "id": "7eb105b2-fea3-45c2-afae-d57598eb12f9",
+      "category": "architecture",
+      "layer": "project",
+      "content": "API services follow a service-based pattern with separate files for each domain: api_client.dart, auth_service.dart, discussion_service.dart, forum_service.dart, group_service.dart, notification_service.dart, post_service.dart, tag_service.dart, user_service.dart",
+      "createdAt": "2026-07-05T08:23:56.580Z",
+      "updatedAt": "2026-07-05T08:23:56.580Z",
+      "lastRecalledAt": null,
+      "recallCount": 0,
+      "sourceConversationId": "a56cbb53-6c4c-4f0d-b672-d9b96c21cc84",
+      "tags": [
+        "auto-extracted",
+        "reflection"
+      ],
+      "archived": false,
+      "branch": null,
+      "directoryScope": null
+    },
+    {
+      "id": "0131c475-0249-4d8b-8cea-97d608435089",
+      "category": "bug-fix",
+      "layer": "project",
+      "content": "User model handles multiple attribute name variations for compatibility (coverUrl, cover, profileCover) when parsing API responses",
+      "createdAt": "2026-07-05T08:23:56.587Z",
+      "updatedAt": "2026-07-05T08:23:56.587Z",
+      "lastRecalledAt": null,
+      "recallCount": 0,
+      "sourceConversationId": "a56cbb53-6c4c-4f0d-b672-d9b96c21cc84",
+      "tags": [
+        "auto-extracted",
+        "reflection"
+      ],
+      "archived": false,
+      "branch": null,
+      "directoryScope": null
+    },
+    {
+      "id": "2090b968-72e0-4e2a-b041-69839e8444f3",
+      "category": "convention",
+      "layer": "project",
+      "content": "LoginRequest uses 'identification' field instead of traditional username/email for authentication",
+      "createdAt": "2026-07-05T08:23:56.594Z",
+      "updatedAt": "2026-07-05T08:23:56.594Z",
+      "lastRecalledAt": null,
+      "recallCount": 0,
+      "sourceConversationId": "a56cbb53-6c4c-4f0d-b672-d9b96c21cc84",
+      "tags": [
+        "auto-extracted",
+        "reflection"
+      ],
+      "archived": false,
+      "branch": null,
+      "directoryScope": null
+    }
+  ]
+}
