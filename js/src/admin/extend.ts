@@ -4,7 +4,6 @@ import commonExtend from '../common/extend';
 import AiAuditLog from '../common/models/AiAuditLog';
 import AiAuditLogListPage from './components/AiAuditLogListPage';
 import AiAuditLogDetailPage from './components/AiAuditLogDetailPage';
-import AiAuditSettingsModal from './components/AiAuditSettingsModal';
 
 const t = (key: string) => app.translator.trans(key, {}, true);
 
@@ -19,15 +18,6 @@ export default [
     'zephyrisle-ai-audit.logs.detail',
     '/ai-audit/:id',
     AiAuditLogDetailPage
-  ),
-  new Extend.Navigation('admin').add(
-    'zephyrisle-ai-audit-settings',
-    () => ({
-      icon: 'fas fa-cog',
-      children: t('zephyrisle-ai-audit.admin.nav.settings'),
-      onclick: () => app.modal.show(AiAuditSettingsModal),
-    }),
-    100
   ),
   new Extend.Navigation('admin').add(
     'zephyrisle-ai-audit-logs',
