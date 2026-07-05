@@ -10,7 +10,6 @@ const t = (key: string) => app.translator.trans(key, {}, true);
 
 export default [
   ...commonExtend,
-  new Extend.Admin().modal('zephyrisle-ai-audit.settings', AiAuditSettingsModal),
   new Extend.Routes('admin').add(
     'zephyrisle-ai-audit.logs',
     '/ai-audit',
