@@ -2,22 +2,27 @@
 
 namespace ZephyrIsle\AiAudit\Api\Controller;
 
-use Flarum\Api\Controller\AbstractListController;
-use Flarum\Http\RequestUtil;
+use Laminas\Diactoros\Response\JsonResponse;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Tobscure\JsonApi\Document;
+use Psr\Http\Server\RequestHandlerInterface;
 use ZephyrIsle\AiAudit\Model\AuditLog;
 use ZephyrIsle\AiAudit\Support\AuditLogListQuery;
+use ZephyrIsle\AiAudit\Support\RequestActor;
 
-class ListAuditLogsController extends AbstractListController
+class ListAuditLogsController implements RequestHandlerInterface
 {
-    public $serializer = 'ZephyrIsle\AiAudit\Api\Serializer\AuditLogSerializer';
-
-    protected function data(ServerRequestInterface $request, Document $document): iterable
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $actor = RequestUtil::getActor($request);
-        $actor->assertRegistered();
-        $actor->assertCan('zephyrisle-ai-audit.viewAuditLogs');
+        $actor = $request->getAttribute('actor');
+        
+        if (!$actor || !$actor instanceof \Flarum\User\User) {
+            return RequestActor::notAuthenticatedResponse();
+        }
+        
+        if (!$actor->can('zephyrisle-ai-audit.viewAuditLogs')) {
+            return RequestActor::permissionDeniedResponse();
+        }
 
         $query = AuditLogListQuery::fromArray($request->getQueryParams());
 
@@ -45,8 +50,43 @@ class ListAuditLogsController extends AbstractListController
             $q->orderBy($map[$query->sort], $query->direction);
         }
 
-        $document->addMeta('total', (clone $q)->count());
+        $total = (clone $q)->count();
+        $rows = $q->skip($query->offset)->take($query->limit)->get();
 
-        return $q->skip($query->offset)->take($query->limit)->get();
+        $data = $rows->map(function (AuditLog $log) use ($actor) {
+            return $this->serialize($log, $actor);
+        })->toArray();
+
+        return new JsonResponse(['data' => $data, 'meta' => ['total' => $total]]);
+    }
+
+    private function serialize(AuditLog $log, $actor): array
+    {
+        $attrs = [
+            'subjectType' => $log->subject_type,
+            'subjectId' => $log->subject_id,
+            'ownerId' => $log->owner_id,
+            'actorId' => $log->actor_id,
+            'status' => $log->status,
+            'risk' => $log->risk ? (float) $log->risk : null,
+            'severity' => (int) $log->severity,
+            'actions' => $log->actions,
+            'conclusion' => $log->conclusion,
+            'retryCount' => (int) $log->retry_count,
+            'createdAt' => $log->created_at?->toIso8601String(),
+            'updatedAt' => $log->updated_at?->toIso8601String(),
+        ];
+
+        if ($actor->can('zephyrisle-ai-audit.viewFullAuditLogs')) {
+            $attrs['snapshot'] = $log->snapshot;
+            $attrs['analysis'] = $log->analysis;
+            $attrs['error'] = $log->error;
+        }
+
+        return [
+            'type' => 'ai-audit-logs',
+            'id' => (string) $log->id,
+            'attributes' => $attrs,
+        ];
     }
 }
