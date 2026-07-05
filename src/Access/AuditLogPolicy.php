@@ -9,27 +9,17 @@ class AuditLogPolicy extends AbstractPolicy
 {
     public function can(User $actor, string $ability): ?int
     {
-        if ($ability === 'zephyrisle-ai-audit.viewAuditLogs') {
-            if ($actor->isAdmin() || $actor->hasPermission('zephyrisle-ai-audit.viewAuditLogs')) {
-                return $this->allow();
-            }
-            return null;
+        // Flarum's policy system automatically grants admins all permissions
+        // We only need to check explicit permissions for non-admin users
+        if ($actor->isAdmin()) {
+            return $this->allow();
         }
 
-        if ($ability === 'zephyrisle-ai-audit.viewFullAuditLogs') {
-            if ($actor->isAdmin() || $actor->hasPermission('zephyrisle-ai-audit.viewFullAuditLogs')) {
-                return $this->allow();
-            }
-            return null;
-        }
-
-        if ($ability === 'zephyrisle-ai-audit.retryAudit') {
-            if ($actor->isAdmin() || $actor->hasPermission('zephyrisle-ai-audit.retryAudit')) {
-                return $this->allow();
-            }
-            return null;
-        }
-
-        return null;
+        return match ($ability) {
+            'zephyrisle-ai-audit.viewAuditLogs',
+            'zephyrisle-ai-audit.viewFullAuditLogs',
+            'zephyrisle-ai-audit.retryAudit' => $actor->hasPermission($ability) ? $this->allow() : null,
+            default => null,
+        };
     }
 }

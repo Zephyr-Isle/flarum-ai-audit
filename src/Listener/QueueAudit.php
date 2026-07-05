@@ -143,16 +143,12 @@ class QueueAudit
 
     private function canBypass($user): bool
     {
-        if (!$user) return false;
-        if ($user->isAdmin()) return true;
-        return $user->hasPermission('zephyrisle-ai-audit.bypassAudit');
+        return $user && ($user->isAdmin() || $user->hasPermission('zephyrisle-ai-audit.bypassAudit'));
     }
 
     private function canBypassPreApprove($user): bool
     {
-        if (!$user) return false;
-        if ($user->isAdmin()) return true;
-        return $user->hasPermission('zephyrisle-ai-audit.bypassPreApprove');
+        return $user && ($user->isAdmin() || $user->hasPermission('zephyrisle-ai-audit.bypassPreApprove'));
     }
 
     private function preApproveEnabled(): bool

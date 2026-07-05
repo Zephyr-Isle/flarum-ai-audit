@@ -12,6 +12,7 @@ zephyrisle-ai-audit:
       behavior_section: 行为设置
       pre_approve_enabled: 启用先审后放
       download_images: 下载图片用于识别
+      image_download_timeout: 图片下载超时（秒）
       review_threshold: 人工复核阈值
       action_threshold: 自动处理阈值
       suspend_days: 封禁时长（天）
@@ -33,6 +34,8 @@ zephyrisle-ai-audit:
       errors:
         load: 加载审核日志失败
         retry: 重试审核失败
+        retry_conflict: 审核已在队列中或正在运行
+        permanent_failure: 审核永久失败，不会重试
       col_subject: 对象
       col_owner: 作者
       col_risk: 风险

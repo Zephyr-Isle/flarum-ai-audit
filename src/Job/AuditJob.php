@@ -77,13 +77,49 @@ class AuditJob extends AbstractJob
 
             $applier->apply($log, $owner, $subject);
         } catch (ModelNotFoundException $e) {
-            $log->markFailed('subject_not_found');
+            // Permanent error - don't retry
+            $this->markPermanentFailure($log, 'subject_not_found');
             return;
+        } catch (\RuntimeException $e) {
+            // Check if this is a permanent error
+            if ($this->isPermanentError($e->getMessage())) {
+                $this->markPermanentFailure($log, $e->getMessage());
+                return;
+            }
+            // Temporary error - allow retry
+            $logger->error('[AI Audit] job failed (temporary)', ['error' => $e->getMessage()]);
+            $log->markFailed($e->getMessage());
+            throw $e;
         } catch (\Exception $e) {
-            $logger->error('[AI Audit] job failed', ['error' => $e->getMessage()]);
+            // Unknown error - allow retry but log it
+            $logger->error('[AI Audit] job failed (unknown)', ['error' => $e->getMessage()]);
             $log->markFailed($e->getMessage());
             throw $e;
         }
+    }
+
+    private function isPermanentError(string $message): bool
+    {
+        $permanentErrors = [
+            'owner_not_found',
+            'unknown_subject_type',
+            'unsupported_subject',
+        ];
+        
+        foreach ($permanentErrors as $error) {
+            if (str_contains($message, $error)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    private function markPermanentFailure(AuditLog $log, string $message): void
+    {
+        $log->markFailed($message);
+        // Delete the job to prevent retries
+        $this->delete();
     }
 
     private function loadSubject()

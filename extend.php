@@ -11,6 +11,9 @@ use ZephyrIsle\AiAudit\Listener\QueueAudit;
 use ZephyrIsle\AiAudit\Model\AuditLog;
 use ZephyrIsle\AiAudit\Provider\AiAuditServiceProvider;
 
+// Extension is compatible with Flarum 1.8+ and 2.0+
+// Event system and API structure remain stable across these versions
+
 return [
     (new Extend\Frontend('admin'))
         ->js(__DIR__.'/js/dist/admin.js')
@@ -49,5 +52,6 @@ return [
         ->default('zephyrisle.ai-audit.review_threshold', 0.55)
         ->default('zephyrisle.ai-audit.action_threshold', 0.75)
         ->default('zephyrisle.ai-audit.suspend_days', 7)
+        ->default('zephyrisle.ai-audit.image_download_timeout', 8)
         ->serializeToForum('zephyrisle-ai-audit.preApproveEnabled', 'zephyrisle.ai-audit.pre_approve_enabled', 'boolval'),
 ];

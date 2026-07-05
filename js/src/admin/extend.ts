@@ -93,6 +93,17 @@ export default [
     )
     .setting(
       () => ({
+        setting: 'zephyrisle.ai-audit.image_download_timeout',
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.image_download_timeout', {}, true),
+        type: 'number',
+        min: 1,
+        max: 30,
+        default: 8,
+      }),
+      91
+    )
+    .setting(
+      () => ({
         setting: 'zephyrisle.ai-audit.review_threshold',
         label: app.translator.trans('zephyrisle-ai-audit.admin.settings.review_threshold', {}, true),
         type: 'number',

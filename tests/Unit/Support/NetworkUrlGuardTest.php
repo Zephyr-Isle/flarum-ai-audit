@@ -21,4 +21,18 @@ class NetworkUrlGuardTest extends TestCase
         $this->assertFalse(NetworkUrlGuard::isSafeExternalHttpUrl('ftp://8.8.8.8/image.png'));
         $this->assertFalse(NetworkUrlGuard::isSafeExternalHttpUrl('https://user:pass@8.8.8.8/image.png'));
     }
+
+    public function testItBlocksInternalHostnames(): void
+    {
+        $this->assertFalse(NetworkUrlGuard::isSafeExternalHttpUrl('http://example.local/image.png'));
+        $this->assertFalse(NetworkUrlGuard::isSafeExternalHttpUrl('http://test.internal/image.png'));
+        $this->assertFalse(NetworkUrlGuard::isSafeExternalHttpUrl('http://my.home/image.png'));
+    }
+
+    public function testItHandlesInvalidUrls(): void
+    {
+        $this->assertFalse(NetworkUrlGuard::isSafeExternalHttpUrl('not-a-url'));
+        $this->assertFalse(NetworkUrlGuard::isSafeExternalHttpUrl(''));
+        $this->assertFalse(NetworkUrlGuard::isSafeExternalHttpUrl('http://'));
+    }
 }

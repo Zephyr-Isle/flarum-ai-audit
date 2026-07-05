@@ -12,13 +12,14 @@ zephyrisle-ai-audit:
       behavior_section: Behavior
       pre_approve_enabled: Enable pre-approval
       download_images: Download images
+      image_download_timeout: Image download timeout (seconds)
       review_threshold: Review threshold
       action_threshold: Action threshold
       suspend_days: Suspend days
 
     permissions:
       view_audit_logs: View audit logs
-      view_full_audit_logs: View full logs
+      view_full_audit_logs: View full logs (with analysis details)
       retry_audit: Retry audits
       bypass_audit: Bypass AI audit
       bypass_pre_approve: Bypass pre-approval
@@ -33,6 +34,8 @@ zephyrisle-ai-audit:
       errors:
         load: Failed to load audit logs
         retry: Failed to retry audit
+        retry_conflict: Audit is already queued or running
+        permanent_failure: Audit failed permanently and will not be retried
       col_subject: Subject
       col_owner: Owner
       col_risk: Risk

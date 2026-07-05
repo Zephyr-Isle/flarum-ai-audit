@@ -42,8 +42,8 @@ class RetryAuditController implements RequestHandlerInterface
 
         $log->markRetrying();
 
-        $changes = $log->analysis['job']['changes'] ?? [];
-        if (!is_array($changes)) $changes = [];
+        // Safely extract changes from analysis, with fallbacks
+        $changes = $this->extractChanges($log);
 
         $this->queue->push(new AuditJob(
             $log->subject_type,
@@ -64,5 +64,24 @@ class RetryAuditController implements RequestHandlerInterface
                 ],
             ],
         ]);
+    }
+
+    private function extractChanges(AuditLog $log): array
+    {
+        // Try to extract changes from analysis job data
+        if (is_array($log->analysis) && isset($log->analysis['job']['changes'])) {
+            $changes = $log->analysis['job']['changes'];
+            if (is_array($changes)) {
+                return $changes;
+            }
+        }
+
+        // Fallback based on subject type
+        return match ($log->subject_type) {
+            'post' => ['content' => 'retry'],
+            'discussion' => ['title' => 'retry'],
+            'user' => ['username' => 'retry'],
+            default => [],
+        };
     }
 }

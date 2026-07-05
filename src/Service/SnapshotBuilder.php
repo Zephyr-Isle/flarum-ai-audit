@@ -148,10 +148,12 @@ class SnapshotBuilder
             return null;
         }
 
-        $timeout = 8;
+        $timeout = (int) $this->settings->get('zephyrisle.ai-audit.image_download_timeout', 8);
+        $connectTimeout = max(1, min($timeout / 2, 10));
+        
         $client = new Client([
             'timeout' => $timeout,
-            'connect_timeout' => 4,
+            'connect_timeout' => $connectTimeout,
             'allow_redirects' => false,
         ]);
 
