@@ -13,12 +13,12 @@ class ShowAuditLogController implements RequestHandlerInterface
 {
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $actor = $request->getAttribute('actor');
-        
-        if (!$actor || !$actor instanceof \Flarum\User\User) {
+        $actor = RequestActor::getActor($request);
+
+        if (!$actor) {
             return RequestActor::notAuthenticatedResponse();
         }
-        
+
         if (!$actor->can('zephyrisle-ai-audit.viewAuditLogs')) {
             return RequestActor::permissionDeniedResponse();
         }

@@ -28,4 +28,41 @@ class RequestActorTest extends TestCase
         $this->assertSame(403, $permissionDenied->getStatusCode());
         $this->assertStringContainsString('"code":"permission_denied"', (string) $permissionDenied->getBody());
     }
+
+    public function testItReadsActorFromActorReferenceForFlarum2(): void
+    {
+        $user = new User();
+        $reference = new class($user) {
+            private User $user;
+            public function __construct(User $user)
+            {
+                $this->user = $user;
+            }
+            public function getActor(): User
+            {
+                return $this->user;
+            }
+        };
+
+        $request = new \ZephyrIsle\AiAudit\Tests\Stub\ServerRequestStub();
+        $request->attributes['actorReference'] = $reference;
+
+        $this->assertSame($user, RequestActor::getActor($request));
+    }
+
+    public function testItFallsBackToLegacyActorAttribute(): void
+    {
+        $user = new User();
+        $request = new \ZephyrIsle\AiAudit\Tests\Stub\ServerRequestStub();
+        $request->attributes['actor'] = $user;
+
+        $this->assertSame($user, RequestActor::getActor($request));
+    }
+
+    public function testItReturnsNullWhenNoActorIsAvailable(): void
+    {
+        $request = new \ZephyrIsle\AiAudit\Tests\Stub\ServerRequestStub();
+
+        $this->assertNull(RequestActor::getActor($request));
+    }
 }
