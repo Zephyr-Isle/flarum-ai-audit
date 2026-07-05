@@ -5,6 +5,7 @@ import LinkButton from 'flarum/common/components/LinkButton';
 import AiAuditLog from '../common/models/AiAuditLog';
 import AiAuditLogDetailPage from './components/AiAuditLogDetailPage';
 import AiAuditLogListPage from './components/AiAuditLogListPage';
+
 export { default as extend } from './extend';
 
 app.initializers.add('zephyrisle-ai-audit', () => {

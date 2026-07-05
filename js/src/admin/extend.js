@@ -2,11 +2,11 @@ import Extend from 'flarum/common/extenders';
 import app from 'flarum/admin/app';
 import commonExtend from '../common/extend';
 
-const t = (key: string): string => app.translator.trans(key, {}, true);
+const t = (key) => app.translator.trans(key, {}, true);
 
 export default [
   ...commonExtend,
-  new (Extend as any).Admin()
+  new Extend.Admin()
     .setting(
       () => ({
         setting: 'zephyrisle.ai-audit.api_endpoint',
