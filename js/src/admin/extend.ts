@@ -1,8 +1,11 @@
 import Extend from 'flarum/common/extenders';
 import app from 'flarum/admin/app';
 import commonExtend from '../common/extend';
+import AiAuditLog from '../common/models/AiAuditLog';
+import AiAuditLogListPage from './components/AiAuditLogListPage';
+import AiAuditLogDetailPage from './components/AiAuditLogDetailPage';
 
-const t = (key) => app.translator.trans(key, {}, true);
+const t = (key: string) => app.translator.trans(key, {}, true);
 
 export default [
   ...commonExtend,
@@ -198,4 +201,20 @@ export default [
       'start',
       100
     ),
+  new Extend.Routes()
+    .add('admin', 'zephyrisle-ai-audit.logs', '/ai-audit', () => AiAuditLogListPage)
+    .add('admin', 'zephyrisle-ai-audit.log', '/ai-audit/:id', () => AiAuditLogDetailPage),
+  new Extend.Navigation('admin')
+    .add(
+      'zephyrisle-ai-audit',
+      () => ({
+        path: 'zephyrisle-ai-audit.logs',
+        label: t('zephyrisle-ai-audit.admin.audit_logs.nav'),
+        icon: 'fas fa-shield-alt',
+        permission: 'zephyrisle-ai-audit.viewAuditLogs',
+      }),
+      80
+    ),
+  new Extend.Store()
+    .addModel('ai-audit-logs', () => AiAuditLog),
 ];
