@@ -3,8 +3,8 @@
   "include": [
     "src/**/*",
     "../vendor/*/*/js/dist-typings/@types/**/*",
-    "admin.ts",
-    "forum.ts"
+    "admin.js",
+    "forum.js"
   ],
   "compilerOptions": {
     "jsx": "react",
