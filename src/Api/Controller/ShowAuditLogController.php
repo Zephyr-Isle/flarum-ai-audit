@@ -2,55 +2,24 @@
 
 namespace ZephyrIsle\AiAudit\Api\Controller;
 
-use Laminas\Diactoros\Response\JsonResponse;
-use Psr\Http\Message\ResponseInterface;
+use Flarum\Api\Controller\AbstractShowController;
+use Flarum\Http\RequestUtil;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Tobscure\JsonApi\Document;
 use ZephyrIsle\AiAudit\Model\AuditLog;
-use ZephyrIsle\AiAudit\Support\RequestActor;
 
-class ShowAuditLogController implements RequestHandlerInterface
+class ShowAuditLogController extends AbstractShowController
 {
-    public function handle(ServerRequestInterface $request): ResponseInterface
+    public $serializer = 'ZephyrIsle\AiAudit\Api\Serializer\AuditLogSerializer';
+
+    protected function data(ServerRequestInterface $request, Document $document): AuditLog
     {
-        $actor = RequestActor::resolve($request->getAttribute('actor'));
-        if (!$actor) {
-            return RequestActor::notAuthenticatedResponse();
-        }
-        if (!$actor->can('zephyrisle-ai-audit.viewAuditLogs')) {
-            return RequestActor::permissionDeniedResponse();
-        }
+        $actor = RequestUtil::getActor($request);
+        $actor->assertRegistered();
+        $actor->assertCan('zephyrisle-ai-audit.viewAuditLogs');
 
         $id = $request->getAttribute('id');
-        $log = AuditLog::findOrFail($id);
 
-        $attrs = [
-            'subjectType' => $log->subject_type,
-            'subjectId' => $log->subject_id,
-            'ownerId' => $log->owner_id,
-            'actorId' => $log->actor_id,
-            'status' => $log->status,
-            'risk' => $log->risk ? (float) $log->risk : null,
-            'severity' => (int) $log->severity,
-            'actions' => $log->actions,
-            'conclusion' => $log->conclusion,
-            'retryCount' => (int) $log->retry_count,
-            'createdAt' => $log->created_at?->toIso8601String(),
-            'updatedAt' => $log->updated_at?->toIso8601String(),
-        ];
-
-        if ($actor->can('zephyrisle-ai-audit.viewFullAuditLogs')) {
-            $attrs['snapshot'] = $log->snapshot;
-            $attrs['analysis'] = $log->analysis;
-            $attrs['error'] = $log->error;
-        }
-
-        return new JsonResponse([
-            'data' => [
-                'type' => 'ai-audit-logs',
-                'id' => (string) $log->id,
-                'attributes' => $attrs,
-            ],
-        ]);
+        return AuditLog::findOrFail($id);
     }
 }
