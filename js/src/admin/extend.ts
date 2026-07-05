@@ -1,185 +1,198 @@
-import Extend from 'flarum/common/extenders';
 import app from 'flarum/admin/app';
+import m from 'mithril';
 import commonExtend from '../common/extend';
 
-export default [
-  ...commonExtend,
+const extensionId = 'zephyrisle-ai-audit';
 
-  new Extend.Admin()
-    .setting(
-      () => ({
+function sectionTitle(labelKey: string) {
+  return () =>
+    m('div', { className: 'Form-group' }, [
+      m('h3', { className: 'App-titleControl' }, app.translator.trans(labelKey)),
+    ]);
+}
+
+export function registerAdminExtensionData(): void {
+  const extensionData = app.extensionData.for(extensionId);
+
+  extensionData
+    .registerSetting(sectionTitle('zephyrisle-ai-audit.admin.settings.api_section'), 200)
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.api_endpoint',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.api_endpoint', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.api_endpoint'),
         type: 'text',
         default: 'https://api.openai.com/v1',
-      }),
-      100
+      },
+      190
     )
-    .setting(
-      () => ({
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.api_key',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.api_key', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.api_key'),
         type: 'text',
-      }),
-      99
+      },
+      189
     )
-    .setting(
-      () => ({
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.model',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.model', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.model'),
         type: 'text',
         default: 'gpt-4o-mini',
-      }),
-      98
+      },
+      188
     )
-    .setting(
-      () => ({
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.temperature',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.temperature', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.temperature'),
         type: 'number',
         min: 0,
         max: 2,
         step: 0.1,
         default: 0.2,
-      }),
-      97
+      },
+      187
     )
-    .setting(
-      () => ({
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.max_tokens',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.max_tokens', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.max_tokens'),
         type: 'number',
         min: 1,
         max: 4096,
         default: 800,
-      }),
-      96
+      },
+      186
     )
-    .setting(
-      () => ({
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.timeout',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.timeout', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.timeout'),
         type: 'number',
         min: 1,
         max: 300,
         default: 30,
-      }),
-      95
+      },
+      185
     )
-    .setting(
-      () => ({
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.system_prompt',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.system_prompt', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.system_prompt'),
         type: 'textarea',
-      }),
-      94
+      },
+      184
     )
-    .setting(
-      () => ({
+    .registerSetting(sectionTitle('zephyrisle-ai-audit.admin.settings.behavior_section'), 120)
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.pre_approve_enabled',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.pre_approve_enabled', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.pre_approve_enabled'),
         type: 'boolean',
-      }),
-      93
+      },
+      119
     )
-    .setting(
-      () => ({
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.download_images',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.download_images', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.download_images'),
         type: 'boolean',
         default: true,
-      }),
-      92
+      },
+      118
     )
-    .setting(
-      () => ({
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.image_download_timeout',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.image_download_timeout', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.image_download_timeout'),
         type: 'number',
         min: 1,
         max: 30,
         default: 8,
-      }),
-      91
+      },
+      117
     )
-    .setting(
-      () => ({
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.review_threshold',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.review_threshold', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.review_threshold'),
         type: 'number',
         min: 0,
         max: 1,
         step: 0.05,
         default: 0.55,
-      }),
-      91
+      },
+      116
     )
-    .setting(
-      () => ({
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.action_threshold',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.action_threshold', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.action_threshold'),
         type: 'number',
         min: 0,
         max: 1,
         step: 0.05,
         default: 0.75,
-      }),
-      90
+      },
+      115
     )
-    .setting(
-      () => ({
+    .registerSetting(
+      {
         setting: 'zephyrisle.ai-audit.suspend_days',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.suspend_days', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.settings.suspend_days'),
         type: 'number',
         min: 1,
         max: 365,
         default: 7,
-      }),
-      89
+      },
+      114
     )
-    .permission(
-      () => ({
+    .registerPermission(
+      {
         icon: 'fas fa-shield-alt',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.permissions.view_audit_logs', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.permissions.view_audit_logs'),
         permission: 'zephyrisle-ai-audit.viewAuditLogs',
-      }),
+      },
       'moderate',
       100
     )
-    .permission(
-      () => ({
+    .registerPermission(
+      {
         icon: 'fas fa-shield-alt',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.permissions.view_full_audit_logs', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.permissions.view_full_audit_logs'),
         permission: 'zephyrisle-ai-audit.viewFullAuditLogs',
-      }),
+      },
       'moderate',
       99
     )
-    .permission(
-      () => ({
+    .registerPermission(
+      {
         icon: 'fas fa-redo',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.permissions.retry_audit', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.permissions.retry_audit'),
         permission: 'zephyrisle-ai-audit.retryAudit',
-      }),
+      },
       'moderate',
       98
     )
-    .permission(
-      () => ({
+    .registerPermission(
+      {
         icon: 'fas fa-user-check',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.permissions.bypass_audit', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.permissions.bypass_audit'),
         permission: 'zephyrisle-ai-audit.bypassAudit',
-      }),
+      },
       'moderate',
       97
     )
-    .permission(
-      () => ({
+    .registerPermission(
+      {
         icon: 'fas fa-user-check',
-        label: app.translator.trans('zephyrisle-ai-audit.admin.permissions.bypass_pre_approve', {}, true),
+        label: app.translator.trans('zephyrisle-ai-audit.admin.permissions.bypass_pre_approve'),
         permission: 'zephyrisle-ai-audit.bypassPreApprove',
-      }),
+      },
       'start',
       100
-    ),
-];
+    );
+}
+
+export default [...commonExtend];

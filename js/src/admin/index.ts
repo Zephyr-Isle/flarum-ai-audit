@@ -5,10 +5,12 @@ import LinkButton from 'flarum/common/components/LinkButton';
 import AiAuditLog from '../common/models/AiAuditLog';
 import AiAuditLogDetailPage from './components/AiAuditLogDetailPage';
 import AiAuditLogListPage from './components/AiAuditLogListPage';
+import { registerAdminExtensionData } from './extend';
 export { default as extend } from './extend';
 
 app.initializers.add('zephyrisle-ai-audit', () => {
   app.store.models['ai-audit-logs'] = AiAuditLog;
+  registerAdminExtensionData();
 
   app.routes['zephyrisle-ai-audit.logs'] = { path: '/ai-audit', component: AiAuditLogListPage };
   app.routes['zephyrisle-ai-audit.log'] = { path: '/ai-audit/:id', component: AiAuditLogDetailPage };

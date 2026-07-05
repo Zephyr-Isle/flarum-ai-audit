@@ -8,13 +8,16 @@ type JsonApiError = {
 type ErrorLike = {
   message?: string;
   responseText?: string;
+  response?: {
+    errors?: JsonApiError[];
+  };
   responseJSON?: {
     errors?: JsonApiError[];
   };
 };
 
 export function apiUrl(path: string): string {
-  return `/api${path}`;
+  return `${app.forum.attribute<string>('apiUrl')}${path}`;
 }
 
 export function showRequestError(error: unknown, fallbackKey: string): void {
@@ -25,7 +28,9 @@ export function showRequestError(error: unknown, fallbackKey: string): void {
 
 function extractErrorMessage(error: unknown): string | null {
   const normalized = error as ErrorLike | undefined;
-  const apiMessage = normalized?.responseJSON?.errors?.find((item) => item.detail || item.title);
+  const apiMessage =
+    normalized?.response?.errors?.find((item) => item.detail || item.title) ||
+    normalized?.responseJSON?.errors?.find((item) => item.detail || item.title);
 
   if (apiMessage?.detail) return apiMessage.detail;
   if (apiMessage?.title) return apiMessage.title;
