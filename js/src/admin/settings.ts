@@ -9,7 +9,9 @@ export default function registerAdminSettings() {
 
   const extensionId = 'zephyrisle-ai-audit';
 
-  app.extensionData.for(extensionId).registerSetting(
+  const registry = app.registry.for(extensionId);
+
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.api_endpoint',
       label: t('zephyrisle-ai-audit.admin.settings.api_endpoint'),
@@ -18,7 +20,7 @@ export default function registerAdminSettings() {
     1000
   );
 
-  app.extensionData.for(extensionId).registerSetting(
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.api_key',
       label: t('zephyrisle-ai-audit.admin.settings.api_key'),
@@ -27,7 +29,7 @@ export default function registerAdminSettings() {
     990
   );
 
-  app.extensionData.for(extensionId).registerSetting(
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.model',
       label: t('zephyrisle-ai-audit.admin.settings.model'),
@@ -36,7 +38,7 @@ export default function registerAdminSettings() {
     980
   );
 
-  app.extensionData.for(extensionId).registerSetting(
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.temperature',
       label: t('zephyrisle-ai-audit.admin.settings.temperature'),
@@ -45,7 +47,7 @@ export default function registerAdminSettings() {
     970
   );
 
-  app.extensionData.for(extensionId).registerSetting(
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.max_tokens',
       label: t('zephyrisle-ai-audit.admin.settings.max_tokens'),
@@ -54,7 +56,7 @@ export default function registerAdminSettings() {
     960
   );
 
-  app.extensionData.for(extensionId).registerSetting(
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.timeout',
       label: t('zephyrisle-ai-audit.admin.settings.timeout'),
@@ -63,7 +65,7 @@ export default function registerAdminSettings() {
     950
   );
 
-  app.extensionData.for(extensionId).registerSetting(
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.system_prompt',
       label: t('zephyrisle-ai-audit.admin.settings.system_prompt'),
@@ -72,7 +74,7 @@ export default function registerAdminSettings() {
     940
   );
 
-  app.extensionData.for(extensionId).registerSetting(
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.pre_approve_enabled',
       label: t('zephyrisle-ai-audit.admin.settings.pre_approve_enabled'),
@@ -81,7 +83,7 @@ export default function registerAdminSettings() {
     930
   );
 
-  app.extensionData.for(extensionId).registerSetting(
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.download_images',
       label: t('zephyrisle-ai-audit.admin.settings.download_images'),
@@ -90,7 +92,7 @@ export default function registerAdminSettings() {
     920
   );
 
-  app.extensionData.for(extensionId).registerSetting(
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.image_download_timeout',
       label: t('zephyrisle-ai-audit.admin.settings.image_download_timeout'),
@@ -99,7 +101,7 @@ export default function registerAdminSettings() {
     910
   );
 
-  app.extensionData.for(extensionId).registerSetting(
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.review_threshold',
       label: t('zephyrisle-ai-audit.admin.settings.review_threshold'),
@@ -108,7 +110,7 @@ export default function registerAdminSettings() {
     900
   );
 
-  app.extensionData.for(extensionId).registerSetting(
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.action_threshold',
       label: t('zephyrisle-ai-audit.admin.settings.action_threshold'),
@@ -117,7 +119,7 @@ export default function registerAdminSettings() {
     890
   );
 
-  app.extensionData.for(extensionId).registerSetting(
+  registry.registerSetting(
     {
       setting: 'zephyrisle.ai-audit.suspend_days',
       label: t('zephyrisle-ai-audit.admin.settings.suspend_days'),
