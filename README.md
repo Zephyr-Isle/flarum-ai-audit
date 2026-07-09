@@ -11,7 +11,7 @@
 
 ## 环境要求
 
-- Flarum：`^1.8` 或 `^2.0`
+- Flarum： `^2.0`
 - 可选依赖：`flarum/flags`（启用“加入待审核队列”的 Flag 功能）
 
 ## 安装
@@ -52,6 +52,7 @@ php flarum cache:clear
 - `zephyrisle.ai-audit.suspend_days`：封禁天数（默认 `7`）
 
 说明：
+
 - `is_approved` 字段并非所有安装都存在；扩展会在运行时检测字段是否存在，避免数据库报错。
 - 未配置 `api_key` 时不会调用 LLM，仅使用本地信号评分。
 
@@ -65,6 +66,7 @@ php flarum cache:clear
 ## 权限
 
 后台权限页可配置：
+
 - `zephyrisle-ai-audit.viewAuditLogs`：查看审核日志
 - `zephyrisle-ai-audit.viewFullAuditLogs`：查看完整日志（含快照/分析/错误）
 - `zephyrisle-ai-audit.retryAudit`：重试审核
