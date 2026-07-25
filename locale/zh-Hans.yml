@@ -1,8 +1,9 @@
 zephyrisle-ai-audit:
   admin:
-    title: AI 审计
+    title: AI 审核
+
     settings:
-      title: AI 审计设置
+      title: AI 审核设置
       api_section: API 配置
       api_endpoint: API 端点
       api_key: API 密钥
@@ -11,17 +12,32 @@ zephyrisle-ai-audit:
       max_tokens: 最大输出 Token
       timeout: 超时（秒）
       system_prompt: 系统提示词
+
+      content_audit_section: 审核内容类型
+      enable_username_audit: 审核用户名变更
+      enable_avatar_audit: 审核头像变更
+      enable_nickname_audit: 审核昵称变更 (flarum/nicknames)
+      enable_bio_audit: 审核签名变更 (fof/user-bio)
+      enable_cover_audit: 审核封面图变更 (forumaker/profile-cover)
+      enable_post_content_audit: 审核帖子/回复内容
+      enable_post_image_audit: 审核帖子中的外部图片
+      enable_discussion_title_audit: 审核主题标题
+      enable_upload_audit: 审核上传文件 (fof/upload)
+      enable_notifications: 违规时向用户发送通知
+      enable_context: 分析时包含对话上下文（主帖内容）
+
       behavior_section: 行为设置
-      pre_approve_enabled: 启用先审后放
-      download_images: 下载图片用于识别
+      pre_approve_enabled: 启用先审后放模式
+      download_images: 下载图片用于 AI 识别
       image_download_timeout: 图片下载超时（秒）
       review_threshold: 人工复核阈值
       action_threshold: 自动处理阈值
       suspend_days: 封禁时长（天）
+      use_json_schema: 使用 JSON Schema 输出（非 OpenAI API 请关闭）
 
     nav:
-      settings: AI 审计设置
-      logs: AI 审计日志
+      settings: AI 审核设置
+      logs: AI 审核日志
 
     permissions:
       view_audit_logs: 查看审核日志
@@ -33,8 +49,10 @@ zephyrisle-ai-audit:
     audit_logs:
       nav: AI 审核
       title: AI 审核日志
-      filter_status: 状态筛选
+      filter_status: 按状态筛选
       filter_all: 全部
+      filter_subject_type: 审核类型
+      no_logs: 暂无审核日志
       messages:
         retry_started: 已加入重试队列
       errors:
@@ -42,9 +60,9 @@ zephyrisle-ai-audit:
         retry: 重试审核失败
         retry_conflict: 审核已在队列中或正在运行
         permanent_failure: 审核永久失败，不会重试
-      col_subject: 对象
+      col_subject: 审核对象
       col_owner: 作者
-      col_risk: 风险
+      col_risk: 风险值
       col_actions: 动作
       col_status: 状态
       col_created: 创建时间
@@ -61,10 +79,47 @@ zephyrisle-ai-audit:
       errors:
         load: 加载审核日志详情失败
         retry: 重试审核失败
-      snapshot: 快照
-      analysis: 分析
+      snapshot: 数据快照
+      analysis: AI 分析
       not_found: 未找到
 
   flags:
-    reason: AI 审核需要复核
-    detail_review: 进入人工复核队列
+    reason: AI 审核标记为需要复核
+    detail_review: AI 审核已将此内容加入人工复核队列
+
+  notifications:
+    ai_audit_title: 内容审核通知
+    ai_audit_body: "您的内容已被审核处理：{conclusion}"
+    email_subject: 内容审核通知
+    email_body: |
+      {username}，您好：
+
+      您的内容已被 AI 审核系统处理。
+
+      审核结果：{conclusion}
+      处理动作：{actions}
+
+      如有任何疑问，请联系论坛管理员。
+
+    subject_types:
+      user_username: 用户名
+      user_avatar: 头像
+      user_nickname: 昵称
+      user_bio: 个性签名
+      user_cover: 封面图
+      discussion_title: 主题标题
+      post_content: 帖子内容
+      post_image: 图片
+      upload_file: 文件
+
+    action_labels:
+      none: 无操作
+      review: 标记待审核
+      hide: 内容已隐藏
+      suspend: 账号已封禁
+      rename: 用户名已重命名
+      delete_avatar: 头像已删除
+      reset_nickname: 昵称已重置
+      reset_bio: 签名已重置
+      delete_cover: 封面图已删除
+      flag: 已标记

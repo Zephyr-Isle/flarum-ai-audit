@@ -9,10 +9,9 @@ use ZephyrIsle\AiAudit\Api\Controller\RetryAuditController;
 use ZephyrIsle\AiAudit\Api\Controller\ShowAuditLogController;
 use ZephyrIsle\AiAudit\Listener\QueueAudit;
 use ZephyrIsle\AiAudit\Model\AuditLog;
+use ZephyrIsle\AiAudit\Notification\AuditNotificationBlueprint;
+use ZephyrIsle\AiAudit\Notification\AuditNotificationSerializer;
 use ZephyrIsle\AiAudit\Provider\AiAuditServiceProvider;
-
-// Extension is compatible with Flarum 1.8+ and 2.0+
-// Event system and API structure remain stable across these versions
 
 return [
     (new Extend\Frontend('admin'))
@@ -28,17 +27,29 @@ return [
     (new Extend\ServiceProvider())
         ->register(AiAuditServiceProvider::class),
 
+    // Event listeners for all content types
     (new Extend\Event())
         ->subscribe(QueueAudit::class),
 
+    // Permission policy
     (new Extend\Policy())
         ->modelPolicy(AuditLog::class, AuditLogPolicy::class),
 
+    // Notification type registration
+    (new Extend\Notification())
+        ->type(
+            AuditNotificationBlueprint::class,
+            AuditNotificationSerializer::class,
+            ['alert', 'email']
+        ),
+
+    // API routes
     (new Extend\Routes('api'))
         ->get('/ai-audit/logs', 'zephyrisle-ai-audit.logs.index', ListAuditLogsController::class)
         ->get('/ai-audit/logs/{id}', 'zephyrisle-ai-audit.logs.show', ShowAuditLogController::class)
         ->post('/ai-audit/logs/{id}/retry', 'zephyrisle-ai-audit.logs.retry', RetryAuditController::class),
 
+    // Default settings
     (new Extend\Settings())
         ->default('zephyrisle.ai-audit.api_endpoint', 'https://api.openai.com/v1')
         ->default('zephyrisle.ai-audit.api_key', '')
@@ -53,5 +64,17 @@ return [
         ->default('zephyrisle.ai-audit.action_threshold', 0.75)
         ->default('zephyrisle.ai-audit.suspend_days', 7)
         ->default('zephyrisle.ai-audit.image_download_timeout', 8)
+        ->default('zephyrisle.ai-audit.enable_username_audit', true)
+        ->default('zephyrisle.ai-audit.enable_avatar_audit', true)
+        ->default('zephyrisle.ai-audit.enable_nickname_audit', true)
+        ->default('zephyrisle.ai-audit.enable_bio_audit', true)
+        ->default('zephyrisle.ai-audit.enable_cover_audit', true)
+        ->default('zephyrisle.ai-audit.enable_post_content_audit', true)
+        ->default('zephyrisle.ai-audit.enable_post_image_audit', true)
+        ->default('zephyrisle.ai-audit.enable_discussion_title_audit', true)
+        ->default('zephyrisle.ai-audit.enable_upload_audit', true)
+        ->default('zephyrisle.ai-audit.enable_notifications', true)
+        ->default('zephyrisle.ai-audit.enable_context', true)
+        ->default('zephyrisle.ai-audit.use_json_schema', true)
         ->serializeToForum('zephyrisle-ai-audit.preApproveEnabled', 'zephyrisle.ai-audit.pre_approve_enabled', 'boolval'),
 ];

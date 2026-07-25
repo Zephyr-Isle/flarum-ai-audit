@@ -1,15 +1,23 @@
 {
     "name": "zephyrisle/flarum-ai-audit",
-    "description": "AI-assisted content audit for Flarum using OpenAI-compatible chat APIs",
+    "description": "AI-assisted content moderation for Flarum - supports posts, discussions, users, avatars, nicknames, bios, profile covers, images, and file uploads",
     "type": "flarum-extension",
     "license": "MIT",
     "require": {
         "flarum/core": "^2.0",
+        "flarum/approval": "^2.0",
+        "flarum/suspend": "^2.0",
         "guzzlehttp/guzzle": "^7.0",
         "ext-json": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5|^10.0|^11.0"
+    },
+    "suggest": {
+        "flarum/nicknames": "For auditing user nickname changes",
+        "fof/user-bio": "For auditing user bio/signature changes",
+        "fof/upload": "For auditing uploaded file content",
+        "forumaker/profile-cover": "For auditing profile cover image changes"
     },
     "autoload": {
         "psr-4": {
@@ -29,7 +37,11 @@
             "title": "AI Audit",
             "category": "moderation",
             "optional-dependencies": [
-                "flarum/flags"
+                "flarum/flags",
+                "flarum/nicknames",
+                "fof/user-bio",
+                "fof/upload",
+                "forumaker/profile-cover"
             ],
             "icon": {
                 "name": "fas fa-shield-alt",

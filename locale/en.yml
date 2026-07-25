@@ -1,6 +1,7 @@
 zephyrisle-ai-audit:
   admin:
     title: AI Audit
+
     settings:
       title: AI Audit Settings
       api_section: API Configuration
@@ -11,13 +12,28 @@ zephyrisle-ai-audit:
       max_tokens: Max Output Tokens
       timeout: Timeout (seconds)
       system_prompt: System Prompt
+
+      content_audit_section: Content Audit Types
+      enable_username_audit: Audit username changes
+      enable_avatar_audit: Audit avatar changes
+      enable_nickname_audit: Audit nickname changes (flarum/nicknames)
+      enable_bio_audit: Audit bio changes (fof/user-bio)
+      enable_cover_audit: Audit profile cover changes (forumaker/profile-cover)
+      enable_post_content_audit: Audit post/reply content
+      enable_post_image_audit: Audit external images in posts
+      enable_discussion_title_audit: Audit discussion/topic titles
+      enable_upload_audit: Audit uploaded files (fof/upload)
+      enable_notifications: Send notifications to users on content action
+      enable_context: Include conversation context (OP content) in analysis
+
       behavior_section: Behavior
-      pre_approve_enabled: Enable pre-approval
-      download_images: Download images
+      pre_approve_enabled: Enable pre-moderation mode
+      download_images: Download images for AI analysis
       image_download_timeout: Image download timeout (seconds)
       review_threshold: Review threshold
       action_threshold: Action threshold
-      suspend_days: Suspend days
+      suspend_days: Suspend duration (days)
+      use_json_schema: Use JSON Schema output (disable for non-OpenAI APIs)
 
     nav:
       settings: AI Audit Settings
@@ -28,13 +44,15 @@ zephyrisle-ai-audit:
       view_full_audit_logs: View full logs (with analysis details)
       retry_audit: Retry audits
       bypass_audit: Bypass AI audit
-      bypass_pre_approve: Bypass pre-approval
+      bypass_pre_approve: Bypass pre-moderation
 
     audit_logs:
       nav: AI Audit
       title: AI Audit Logs
       filter_status: Filter by status
       filter_all: All
+      filter_subject_type: Subject type
+      no_logs: No audit logs found
       messages:
         retry_started: Retry queued
       errors:
@@ -66,5 +84,42 @@ zephyrisle-ai-audit:
       not_found: Not found
 
   flags:
-    reason: AI audit needs review
-    detail_review: Added to manual review queue
+    reason: AI audit flagged for review
+    detail_review: Added to manual review queue by AI Audit
+
+  notifications:
+    ai_audit_title: Content Moderation Notice
+    ai_audit_body: "Your content has been moderated: {conclusion}"
+    email_subject: Content Moderation Notice
+    email_body: |
+      Hello {username},
+
+      Your content has been reviewed by our AI moderation system.
+
+      Result: {conclusion}
+      Actions taken: {actions}
+
+      If you have any questions, please contact the forum administrators.
+
+    subject_types:
+      user_username: Username
+      user_avatar: Avatar
+      user_nickname: Nickname
+      user_bio: Bio/Signature
+      user_cover: Profile Cover
+      discussion_title: Topic Title
+      post_content: Post Content
+      post_image: Image
+      upload_file: File
+
+    action_labels:
+      none: No action
+      review: Flagged for review
+      hide: Content hidden
+      suspend: Account suspended
+      rename: Username renamed
+      delete_avatar: Avatar deleted
+      reset_nickname: Nickname reset
+      reset_bio: Bio reset
+      delete_cover: Cover deleted
+      flag: Flagged

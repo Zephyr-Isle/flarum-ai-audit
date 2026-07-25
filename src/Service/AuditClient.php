@@ -9,7 +9,7 @@ use Psr\Log\LoggerInterface;
 
 class AuditClient
 {
-    private const FORMAT_VERSION = 'zia_audit_v1';
+    private const FORMAT_VERSION = 'zia_audit_v2';
 
     public function __construct(
         private SettingsRepositoryInterface $settings,
@@ -87,9 +87,15 @@ class AuditClient
             $actions = ['review'];
         }
         if ($risk >= $actionThreshold) {
-            $actions = ['hide'];
-            if ($severity >= 3 || $risk >= min(0.95, $actionThreshold + 0.2)) {
-                $actions[] = 'suspend';
+            // Use LLM-suggested actions if available, otherwise use defaults
+            $suggestedActions = $llm['actions'] ?? null;
+            if (is_array($suggestedActions) && !empty($suggestedActions)) {
+                $actions = $suggestedActions;
+            } else {
+                $actions = ['hide'];
+                if ($severity >= 3 || $risk >= min(0.95, $actionThreshold + 0.2)) {
+                    $actions[] = 'suspend';
+                }
             }
         }
 
@@ -130,7 +136,7 @@ class AuditClient
     {
         $systemPrompt = trim((string) $this->settings->get('zephyrisle.ai-audit.system_prompt', ''));
         if ($systemPrompt === '') {
-            $systemPrompt = $this->defaultSystemPrompt();
+            $systemPrompt = $this->dynamicSystemPrompt($snapshot);
         }
 
         $text = $this->buildUserText($snapshot, $signals);
@@ -185,8 +191,9 @@ class AuditClient
             $lines[] = '';
         }
 
+        // Include context if available
         $ctx = $snapshot['context'] ?? [];
-        if (is_array($ctx) && $ctx !== []) {
+        if (is_array($ctx) && $ctx !== [] && $this->contextEnabled()) {
             $lines[] = 'context:';
             foreach ($ctx as $k => $v) {
                 if (is_scalar($v) || $v === null) {
@@ -214,13 +221,66 @@ class AuditClient
         $temperature = max(0.0, min(2.0, (float) $this->settings->get('zephyrisle.ai-audit.temperature', 0.2)));
         $maxTokens = max(1, min(4096, (int) $this->settings->get('zephyrisle.ai-audit.max_tokens', 800)));
 
-        return [
+        $payload = [
             'model' => $model,
             'messages' => $messages,
             'temperature' => $temperature,
             'max_tokens' => $maxTokens,
-            'response_format' => ['type' => 'json_object'],
         ];
+
+        // Use json_schema or json_object response format
+        $useJsonSchema = (bool) $this->settings->get('zephyrisle.ai-audit.use_json_schema', true);
+        if ($useJsonSchema) {
+            $payload['response_format'] = [
+                'type' => 'json_schema',
+                'json_schema' => [
+                    'name' => 'content_audit_result',
+                    'strict' => true,
+                    'schema' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'risk' => [
+                                'type' => 'number',
+                                'description' => 'Risk score from 0.0 to 1.0',
+                            ],
+                            'severity' => [
+                                'type' => 'integer',
+                                'description' => 'Severity level 0-3 (0=normal, 1=low, 2=medium, 3=high)',
+                            ],
+                            'conclusion' => [
+                                'type' => 'string',
+                                'description' => 'Brief conclusion in simplified Chinese, max 60 chars',
+                            ],
+                            'actions' => [
+                                'type' => 'array',
+                                'description' => 'Suggested moderation actions',
+                                'items' => [
+                                    'type' => 'string',
+                                    'enum' => [
+                                        'none',
+                                        'review',
+                                        'hide',
+                                        'suspend',
+                                        'rename',
+                                        'delete_avatar',
+                                        'reset_nickname',
+                                        'reset_bio',
+                                        'delete_cover',
+                                        'flag',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'required' => ['risk', 'severity', 'conclusion', 'actions'],
+                        'additionalProperties' => false,
+                    ],
+                ],
+            ];
+        } else {
+            $payload['response_format'] = ['type' => 'json_object'];
+        }
+
+        return $payload;
     }
 
     private function send(array $payload): array
@@ -273,10 +333,18 @@ class AuditClient
         $severity = max(0, min(3, (int) ($obj['severity'] ?? 0)));
         $conclusion = is_string($obj['conclusion'] ?? null) ? trim((string) $obj['conclusion']) : '';
 
+        $rawActions = $obj['actions'] ?? null;
+        $actions = null;
+        if (is_array($rawActions) && !empty($rawActions)) {
+            $validActions = ['none', 'review', 'hide', 'suspend', 'rename', 'delete_avatar', 'reset_nickname', 'reset_bio', 'delete_cover', 'flag'];
+            $actions = array_values(array_intersect($rawActions, $validActions));
+        }
+
         return [
             'risk' => $risk,
             'severity' => $severity,
             'conclusion' => $conclusion,
+            'actions' => $actions,
         ];
     }
 
@@ -310,19 +378,63 @@ class AuditClient
         return $x;
     }
 
-    private function defaultSystemPrompt(): string
+    private function contextEnabled(): bool
     {
-        return <<<'PROMPT'
+        return (bool) $this->settings->get('zephyrisle.ai-audit.enable_context', true);
+    }
+
+    /**
+     * Generate a dynamic system prompt based on the subject type.
+     */
+    private function dynamicSystemPrompt(array $snapshot): string
+    {
+        $subjectType = $snapshot['subject_type'] ?? 'unknown';
+
+        $basePrompt = <<<'PROMPT'
 你是论坛内容审核助手。请根据输入内容判断是否存在违规风险，并给出风险值与严重程度。
+
+可采取的审核动作：
+- none: 无违规，内容正常
+- review: 需要人工复核
+- hide: 隐藏内容（设为未审核通过）
+- suspend: 封禁用户账号
+- rename: 重命名用户（严重违规时使用）
+- delete_avatar: 删除用户头像
+- reset_nickname: 重置用户昵称为空
+- reset_bio: 重置用户签名为空
+- delete_cover: 删除用户封面图
+- flag: 标记内容供管理员审查
+
+规则：
+- 如果内容正常，只返回 ["none"]
+- 如果轻微违规或有嫌疑，返回 ["review"]
+- 如果明显违规，返回 ["hide"]
+- 如果严重违规（暴力、色情、人肉搜索等），返回 ["hide", "suspend"]
+- 用户资料（用户名、昵称、头像、签名）违规：返回对应删除/重置动作
+- 始终基于风险值和严重程度做出合理判断
 
 输出要求：
 1) 只输出一个 JSON 对象，不要输出其他文字。
 2) 不要复述原文；使用概括性描述。
 3) risk: 0.0-1.0；severity: 0-3；conclusion: 简体中文，60字以内。
-
-输出示例：
-{"risk":0.12,"severity":0,"conclusion":"正常讨论内容"}
+4) actions: 数组，包含建议采取的动作。
 PROMPT;
+
+        // Specific guidance for each content type
+        $typeGuidance = match ($subjectType) {
+            'user_username' => "\n\n当前审核类型：用户用户名。注意用户名是否包含违规词汇、广告、联系方式等。",
+            'user_avatar' => "\n\n当前审核类型：用户头像。注意头像是否包含违规图像（色情、暴力、政治敏感等）。",
+            'user_nickname' => "\n\n当前审核类型：用户昵称。注意昵称是否包含违规词汇、广告、冒充他人等。",
+            'user_bio' => "\n\n当前审核类型：用户签名档。注意签名是否包含广告、联系方式、违规内容等。",
+            'user_cover' => "\n\n当前审核类型：用户封面图。注意封面是否包含违规图像。",
+            'discussion_title' => "\n\n当前审核类型：主题标题。注意标题是否包含违规、恶意、广告内容。",
+            'post_content' => "\n\n当前审核类型：帖子内容。注意内容是否包含违规信息、广告、人身攻击、色情等。",
+            'post_image' => "\n\n当前审核类型：帖子图片。注意图片是否包含违规内容。",
+            'upload_file' => "\n\n当前审核类型：上传文件。注意文件描述是否包含违规内容。",
+            default => '',
+        };
+
+        return $basePrompt . $typeGuidance;
     }
 
     private function computeSignals(array $snapshot): array

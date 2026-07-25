@@ -2,11 +2,14 @@
 
 namespace ZephyrIsle\AiAudit\Listener;
 
+use Flarum\Discussion\Discussion;
 use Flarum\Discussion\Event\Saving as DiscussionSaving;
 use Flarum\Post\CommentPost;
 use Flarum\Post\Event\Saving as PostSaving;
 use Flarum\Settings\SettingsRepositoryInterface;
+use Flarum\User\Event\AvatarSaving;
 use Flarum\User\Event\Saving as UserSaving;
+use Flarum\User\User;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Queue\Queue;
 use Psr\Log\LoggerInterface;
@@ -27,10 +30,25 @@ class QueueAudit
         $events->listen(PostSaving::class, [$this, 'onPostSaving']);
         $events->listen(DiscussionSaving::class, [$this, 'onDiscussionSaving']);
         $events->listen(UserSaving::class, [$this, 'onUserSaving']);
+        $events->listen(AvatarSaving::class, [$this, 'onAvatarSaving']);
+
+        // fof/upload event
+        if (class_exists('FoF\Upload\Event\FileWasUploaded')) {
+            $events->listen('FoF\Upload\Event\FileWasUploaded', [$this, 'onFileUploaded']);
+        }
+        if (class_exists('FoF\Upload\Event\FileWillBeUploaded')) {
+            $events->listen('FoF\Upload\Event\FileWillBeUploaded', [$this, 'onFileWillBeUploaded']);
+        }
     }
+
+    // ================================================================
+    //  POST CONTENT (core)
+    // ================================================================
 
     public function onPostSaving(PostSaving $event): void
     {
+        if (!$this->isEnabled('post_content')) return;
+
         $post = $event->post;
         $actor = $event->actor;
 
@@ -41,68 +59,50 @@ class QueueAudit
         $edited = $post->exists && isset($event->data['attributes']['content']);
         if (!$isNew && !$edited) return;
 
-        if ($isNew && $this->preApproveEnabled() && !$this->canBypassPreApprove($actor) && $this->supportsApproval($post)) {
-            $post->setAttribute('is_approved', false);
+        if ($isNew && $this->preApproveEnabled() && !$this->canBypassPreApprove($actor)) {
+            $this->setUnapproved($post);
         }
 
         $post->afterSave(function ($post) use ($actor) {
-            $log = new AuditLog([
-                'subject_type' => 'post',
-                'subject_id' => $post->id,
-                'actor_id' => $actor?->id,
-                'owner_id' => $post->user_id,
-                'status' => 'pending',
-                'retry_count' => 0,
+            $this->queueAudit('post_content', $post->id, $actor?->id, $post->user_id, [
+                'content' => $post->content,
             ]);
-            $log->save();
 
-            $this->queue->push(new AuditJob(
-                'post',
-                $post->id,
-                $actor?->id,
-                $post->user_id,
-                ['content' => $post->content],
-                $log->id
-            ));
+            // Check for images in content
+            if ($this->isEnabled('post_image') && $this->hasImageUrls((string) $post->content)) {
+                $this->queueAudit('post_image', $post->id, $actor?->id, $post->user_id, [
+                    'content' => $post->content,
+                ]);
+            }
         });
     }
 
+    // ================================================================
+    //  DISCUSSION TITLE (core)
+    // ================================================================
+
     public function onDiscussionSaving(DiscussionSaving $event): void
     {
+        if (!$this->isEnabled('discussion_title')) return;
+
         $discussion = $event->discussion;
         $actor = $event->actor;
 
         if ($this->canBypass($actor)) return;
 
-        $isNew = !$discussion->exists;
         $titleChanged = $discussion->exists && isset($event->data['attributes']['title']);
-        if (!$isNew && !$titleChanged) return;
-
-        if ($isNew && $this->preApproveEnabled() && !$this->canBypassPreApprove($actor) && $this->supportsApproval($discussion)) {
-            $discussion->setAttribute('is_approved', false);
-        }
+        if (!$titleChanged) return;
 
         $discussion->afterSave(function ($discussion) use ($actor) {
-            $log = new AuditLog([
-                'subject_type' => 'discussion',
-                'subject_id' => $discussion->id,
-                'actor_id' => $actor?->id,
-                'owner_id' => $discussion->user_id,
-                'status' => 'pending',
-                'retry_count' => 0,
+            $this->queueAudit('discussion_title', $discussion->id, $actor?->id, $discussion->user_id, [
+                'title' => $discussion->title,
             ]);
-            $log->save();
-
-            $this->queue->push(new AuditJob(
-                'discussion',
-                $discussion->id,
-                $actor?->id,
-                $discussion->user_id,
-                ['title' => $discussion->title],
-                $log->id
-            ));
         });
     }
+
+    // ================================================================
+    //  USER PROFILE CHANGES (core + flarum/nicknames + fof/user-bio)
+    // ================================================================
 
     public function onUserSaving(UserSaving $event): void
     {
@@ -111,34 +111,204 @@ class QueueAudit
 
         if ($this->canBypass($actor)) return;
 
+        $isNew = !$user->exists;
         $changes = [];
-        foreach (['username', 'display_name', 'bio'] as $k) {
-            if (isset($event->data['attributes'][$k])) {
-                $changes[$k] = $event->data['attributes'][$k];
+
+        // Username changes (core)
+        if ($this->isEnabled('username') && isset($event->data['attributes']['username'])) {
+            $changes['username'] = $event->data['attributes']['username'];
+            $changes['oldUsername'] = $user->getOriginal('username') ?? $user->username;
+
+            // Queue username audit
+            $user->afterSave(function ($user) use ($actor, $changes) {
+                $this->queueAudit('user_username', $user->id, $actor?->id, $user->id, $changes);
+            });
+        }
+
+        // Nickname changes (flarum/nicknames)
+        if ($this->isEnabled('nickname') && isset($event->data['attributes']['nickname'])) {
+            $oldNickname = $this->getUserAttribute($user, 'nickname') ?? '';
+
+            $user->afterSave(function ($user) use ($actor, $oldNickname) {
+                $this->queueAudit('user_nickname', $user->id, $actor?->id, $user->id, [
+                    'nickname' => $user->nickname ?? '',
+                    'oldNickname' => $oldNickname,
+                ]);
+            });
+        }
+
+        // Bio changes (fof/user-bio)
+        if ($this->isEnabled('bio') && isset($event->data['attributes']['bio'])) {
+            $oldBio = $this->getUserAttribute($user, 'bio') ?? '';
+
+            $user->afterSave(function ($user) use ($actor, $oldBio) {
+                $this->queueAudit('user_bio', $user->id, $actor?->id, $user->id, [
+                    'bio' => $user->bio ?? '',
+                    'oldBio' => $oldBio,
+                ]);
+            });
+        }
+
+        // Profile cover changes (forumaker/profile-cover)
+        if ($this->isEnabled('cover')) {
+            foreach (['cover', 'cover_url', 'profile_cover'] as $coverKey) {
+                if (isset($event->data['attributes'][$coverKey])) {
+                    $coverChanges = ['cover' => $event->data['attributes'][$coverKey]];
+
+                    $user->afterSave(function ($user) use ($actor, $coverChanges) {
+                        $this->queueAudit('user_cover', $user->id, $actor?->id, $user->id, $coverChanges);
+                    });
+                    break;
+                }
             }
         }
-        if ($changes === []) return;
+
+        if ($isNew) {
+            // For new users, the username audit is already queued above
+            return;
+        }
+    }
+
+    // ================================================================
+    //  USER AVATAR (core)
+    // ================================================================
+
+    public function onAvatarSaving(AvatarSaving $event): void
+    {
+        if (!$this->isEnabled('avatar')) return;
+
+        $user = $event->user;
+        $actor = $event->actor;
+
+        if ($this->canBypass($actor)) return;
+
+        $changes = [
+            'oldAvatarUrl' => $this->getUserAttribute($user, 'avatar_url'),
+        ];
 
         $user->afterSave(function ($user) use ($actor, $changes) {
-            $log = new AuditLog([
-                'subject_type' => 'user',
-                'subject_id' => $user->id,
-                'actor_id' => $actor?->id,
-                'owner_id' => $user->id,
-                'status' => 'pending',
-                'retry_count' => 0,
-            ]);
-            $log->save();
-
-            $this->queue->push(new AuditJob(
-                'user',
-                $user->id,
-                $actor?->id,
-                $user->id,
-                $changes,
-                $log->id
-            ));
+            $this->queueAudit('user_avatar', $user->id, $actor?->id, $user->id, $changes);
         });
+    }
+
+    // ================================================================
+    //  FILE UPLOADS (fof/upload)
+    // ================================================================
+
+    public function onFileWillBeUploaded(object $event): void
+    {
+        if (!$this->isEnabled('upload')) return;
+
+        // fof/upload FileWillBeUploaded event - queue audit before file is saved
+        // The event has: $event->actor, $event->file (instance of FoF\Upload\File)
+        $actor = $event->actor ?? null;
+        $file = $event->file ?? null;
+
+        if (!$file || !method_exists($file, 'post') || !$file->post) return;
+        if ($this->canBypass($actor)) return;
+
+        $post = $file->post;
+
+        $this->queueAudit('upload_file', $post->id, $actor?->id, $post->user_id, [
+            'file_name' => method_exists($file, 'getDisplayName') ? $file->getDisplayName() : 'unknown',
+        ]);
+    }
+
+    public function onFileUploaded(object $event): void
+    {
+        if (!$this->isEnabled('upload')) return;
+
+        // Alternative: fof/upload FileWasUploaded event
+        $actor = $event->actor ?? null;
+        $file = $event->file ?? null;
+
+        if (!$file || !method_exists($file, 'post') || !$file->post) return;
+        if ($this->canBypass($actor)) return;
+
+        $post = $file->post;
+
+        $this->queueAudit('upload_file', $post->id, $actor?->id, $post->user_id, [
+            'file_name' => method_exists($file, 'getDisplayName') ? $file->getDisplayName() : 'unknown',
+        ]);
+    }
+
+    // ================================================================
+    //  HELPERS
+    // ================================================================
+
+    private function queueAudit(string $subjectType, ?int $subjectId, ?int $actorId, ?int $ownerId, array $changes): void
+    {
+        $log = new AuditLog([
+            'subject_type' => $subjectType,
+            'subject_id' => $subjectId,
+            'actor_id' => $actorId,
+            'owner_id' => $ownerId,
+            'status' => 'pending',
+            'retry_count' => 0,
+        ]);
+        $log->save();
+
+        $this->queue->push(new AuditJob(
+            $subjectType,
+            $subjectId,
+            $actorId,
+            $ownerId,
+            $changes,
+            $log->id
+        ));
+    }
+
+    private function isEnabled(string $type): bool
+    {
+        $keyMap = [
+            'username' => 'zephyrisle.ai-audit.enable_username_audit',
+            'avatar' => 'zephyrisle.ai-audit.enable_avatar_audit',
+            'nickname' => 'zephyrisle.ai-audit.enable_nickname_audit',
+            'bio' => 'zephyrisle.ai-audit.enable_bio_audit',
+            'cover' => 'zephyrisle.ai-audit.enable_cover_audit',
+            'post_content' => 'zephyrisle.ai-audit.enable_post_content_audit',
+            'post_image' => 'zephyrisle.ai-audit.enable_post_image_audit',
+            'discussion_title' => 'zephyrisle.ai-audit.enable_discussion_title_audit',
+            'upload' => 'zephyrisle.ai-audit.enable_upload_audit',
+        ];
+
+        $key = $keyMap[$type] ?? null;
+        if ($key === null) return true; // unknown types default to enabled
+
+        return (bool) $this->settings->get($key, true);
+    }
+
+    private function hasImageUrls(string $content): bool
+    {
+        if (preg_match('/<img\s+[^>]*src=["\']([^"\']+)["\']/i', $content)) return true;
+        if (preg_match('/!\[[^\]]*\]\(([^)]+)\)/', $content)) return true;
+        return false;
+    }
+
+    private function setUnapproved($model): void
+    {
+        try {
+            if ($model->getConnection()->getSchemaBuilder()->hasColumn($model->getTable(), 'is_approved')) {
+                $model->setAttribute('is_approved', false);
+            }
+        } catch (\Exception) {
+            // ignore
+        }
+    }
+
+    private function getUserAttribute(User $user, string $key): mixed
+    {
+        try {
+            if (method_exists($user, 'getRawOriginal')) {
+                return $user->getRawOriginal($key);
+            }
+            if (method_exists($user, 'getOriginal') && $user->getOriginal($key) !== null) {
+                return $user->getOriginal($key);
+            }
+            return $user->$key ?? null;
+        } catch (\Exception) {
+            return null;
+        }
     }
 
     private function canBypass($user): bool
@@ -154,17 +324,5 @@ class QueueAudit
     private function preApproveEnabled(): bool
     {
         return (bool) $this->settings->get('zephyrisle.ai-audit.pre_approve_enabled', false);
-    }
-
-    private function supportsApproval($model): bool
-    {
-        try {
-            if (!is_object($model) || !method_exists($model, 'getConnection') || !method_exists($model, 'getTable')) {
-                return false;
-            }
-            return $model->getConnection()->getSchemaBuilder()->hasColumn($model->getTable(), 'is_approved');
-        } catch (\Exception) {
-            return false;
-        }
     }
 }

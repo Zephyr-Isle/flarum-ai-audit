@@ -13,9 +13,6 @@ const t = (key: string) =>
 export default [
   ...commonExtend,
 
-  /**
-   * Flarum v2 Admin settings
-   */
   new Extend.Admin()
     .page(() => ({
       path: '/ai-audit',
@@ -23,35 +20,29 @@ export default [
       icon: 'fas fa-shield-alt',
     }))
 
+    // ============ API Configuration Section ============
+
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.api_endpoint',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.api_endpoint'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.api_endpoint'),
       type: 'text',
     }))
 
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.api_key',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.api_key'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.api_key'),
       type: 'password',
     }))
 
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.model',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.model'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.model'),
       type: 'text',
     }))
 
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.temperature',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.temperature'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.temperature'),
       type: 'number',
       min: 0,
       max: 2,
@@ -60,9 +51,7 @@ export default [
 
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.max_tokens',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.max_tokens'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.max_tokens'),
       type: 'number',
       min: 1,
       max: 4096,
@@ -70,9 +59,7 @@ export default [
 
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.timeout',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.timeout'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.timeout'),
       type: 'number',
       min: 1,
       max: 300,
@@ -80,33 +67,101 @@ export default [
 
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.system_prompt',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.system_prompt'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.system_prompt'),
       type: 'textarea',
     }))
 
+    // ============ Content Audit Toggles ============
+
+    .setting(() => ({
+      setting: 'zephyrisle.ai-audit.enable_username_audit',
+      label: t('zephyrisle-ai-audit.admin.settings.enable_username_audit'),
+      type: 'boolean',
+    }))
+
+    .setting(() => ({
+      setting: 'zephyrisle.ai-audit.enable_avatar_audit',
+      label: t('zephyrisle-ai-audit.admin.settings.enable_avatar_audit'),
+      type: 'boolean',
+    }))
+
+    .setting(() => ({
+      setting: 'zephyrisle.ai-audit.enable_nickname_audit',
+      label: t('zephyrisle-ai-audit.admin.settings.enable_nickname_audit'),
+      type: 'boolean',
+    }))
+
+    .setting(() => ({
+      setting: 'zephyrisle.ai-audit.enable_bio_audit',
+      label: t('zephyrisle-ai-audit.admin.settings.enable_bio_audit'),
+      type: 'boolean',
+    }))
+
+    .setting(() => ({
+      setting: 'zephyrisle.ai-audit.enable_cover_audit',
+      label: t('zephyrisle-ai-audit.admin.settings.enable_cover_audit'),
+      type: 'boolean',
+    }))
+
+    .setting(() => ({
+      setting: 'zephyrisle.ai-audit.enable_post_content_audit',
+      label: t('zephyrisle-ai-audit.admin.settings.enable_post_content_audit'),
+      type: 'boolean',
+    }))
+
+    .setting(() => ({
+      setting: 'zephyrisle.ai-audit.enable_post_image_audit',
+      label: t('zephyrisle-ai-audit.admin.settings.enable_post_image_audit'),
+      type: 'boolean',
+    }))
+
+    .setting(() => ({
+      setting: 'zephyrisle.ai-audit.enable_discussion_title_audit',
+      label: t('zephyrisle-ai-audit.admin.settings.enable_discussion_title_audit'),
+      type: 'boolean',
+    }))
+
+    .setting(() => ({
+      setting: 'zephyrisle.ai-audit.enable_upload_audit',
+      label: t('zephyrisle-ai-audit.admin.settings.enable_upload_audit'),
+      type: 'boolean',
+    }))
+
+    .setting(() => ({
+      setting: 'zephyrisle.ai-audit.enable_notifications',
+      label: t('zephyrisle-ai-audit.admin.settings.enable_notifications'),
+      type: 'boolean',
+    }))
+
+    .setting(() => ({
+      setting: 'zephyrisle.ai-audit.use_json_schema',
+      label: t('zephyrisle-ai-audit.admin.settings.use_json_schema'),
+      type: 'boolean',
+    }))
+
+    .setting(() => ({
+      setting: 'zephyrisle.ai-audit.enable_context',
+      label: t('zephyrisle-ai-audit.admin.settings.enable_context'),
+      type: 'boolean',
+    }))
+
+    // ============ Behavior Settings ============
+
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.pre_approve_enabled',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.pre_approve_enabled'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.pre_approve_enabled'),
       type: 'boolean',
     }))
 
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.download_images',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.download_images'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.download_images'),
       type: 'boolean',
     }))
 
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.image_download_timeout',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.image_download_timeout'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.image_download_timeout'),
       type: 'number',
       min: 1,
       max: 30,
@@ -114,9 +169,7 @@ export default [
 
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.review_threshold',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.review_threshold'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.review_threshold'),
       type: 'number',
       min: 0,
       max: 1,
@@ -125,9 +178,7 @@ export default [
 
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.action_threshold',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.action_threshold'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.action_threshold'),
       type: 'number',
       min: 0,
       max: 1,
@@ -136,99 +187,73 @@ export default [
 
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.suspend_days',
-      label: t(
-        'zephyrisle-ai-audit.admin.settings.suspend_days'
-      ),
+      label: t('zephyrisle-ai-audit.admin.settings.suspend_days'),
       type: 'number',
       min: 1,
       max: 365,
     }))
 
+    // ============ Permissions ============
 
-    /**
-     * Permissions
-     */
     .permission(() => ({
       icon: 'fas fa-shield-alt',
-      label: t(
-        'zephyrisle-ai-audit.admin.permissions.view_audit_logs'
-      ),
+      label: t('zephyrisle-ai-audit.admin.permissions.view_audit_logs'),
       permission: 'zephyrisle-ai-audit.viewAuditLogs',
     }), 'moderate', 110)
 
     .permission(() => ({
       icon: 'fas fa-shield-alt',
-      label: t(
-        'zephyrisle-ai-audit.admin.permissions.view_full_audit_logs'
-      ),
+      label: t('zephyrisle-ai-audit.admin.permissions.view_full_audit_logs'),
       permission: 'zephyrisle-ai-audit.viewFullAuditLogs',
     }), 'moderate', 109)
 
     .permission(() => ({
       icon: 'fas fa-redo',
-      label: t(
-        'zephyrisle-ai-audit.admin.permissions.retry_audit'
-      ),
+      label: t('zephyrisle-ai-audit.admin.permissions.retry_audit'),
       permission: 'zephyrisle-ai-audit.retryAudit',
     }), 'moderate', 108)
 
     .permission(() => ({
       icon: 'fas fa-user-check',
-      label: t(
-        'zephyrisle-ai-audit.admin.permissions.bypass_audit'
-      ),
+      label: t('zephyrisle-ai-audit.admin.permissions.bypass_audit'),
       permission: 'zephyrisle-ai-audit.bypassAudit',
     }), 'moderate', 107)
 
     .permission(() => ({
       icon: 'fas fa-user-check',
-      label: t(
-        'zephyrisle-ai-audit.admin.permissions.bypass_pre_approve'
-      ),
+      label: t('zephyrisle-ai-audit.admin.permissions.bypass_pre_approve'),
       permission: 'zephyrisle-ai-audit.bypassPreApprove',
     }), 'moderate', 106),
 
+  // ============ Admin Routes ============
 
-  /**
-   * Admin routes
-   */
   new Extend.Routes('admin')
     .add(
       'zephyrisle-ai-audit.logs',
       '/ai-audit',
       AiAuditLogListPage
     )
-
     .add(
       'zephyrisle-ai-audit.logs.detail',
       '/ai-audit/:id',
       AiAuditLogDetailPage
     ),
 
+  // ============ Admin Navigation ============
 
-  /**
-   * Admin navigation
-   */
   new Extend.Navigation('admin')
     .add(
       'zephyrisle-ai-audit-logs',
       () => ({
         icon: 'fas fa-shield-alt',
-        label: t(
-          'zephyrisle-ai-audit.admin.nav.logs'
-        ),
+        label: t('zephyrisle-ai-audit.admin.nav.logs'),
         href: app.url('/admin/ai-audit'),
       }),
       99
     ),
 
+  // ============ Store Models ============
 
-  /**
-   * Store models
-   */
   new Extend.Store()
-    .addModel(
-      'ai-audit-logs',
-      AiAuditLog
-    ),
+    .addModel('ai-audit-logs', AiAuditLog),
 ];

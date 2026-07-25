@@ -12,6 +12,30 @@ type ListResponse = {
   meta?: { total?: number };
 };
 
+const SUBJECT_ICONS: Record<string, string> = {
+  user_username: 'fas fa-user',
+  user_avatar: 'fas fa-user-circle',
+  user_nickname: 'fas fa-tag',
+  user_bio: 'fas fa-quote-right',
+  user_cover: 'fas fa-image',
+  discussion_title: 'fas fa-heading',
+  post_content: 'fas fa-comment',
+  post_image: 'fas fa-camera',
+  upload_file: 'fas fa-file-upload',
+};
+
+const SUBJECT_LABELS: Record<string, string> = {
+  user_username: 'zephyrisle-ai-audit.notifications.subject_types.user_username',
+  user_avatar: 'zephyrisle-ai-audit.notifications.subject_types.user_avatar',
+  user_nickname: 'zephyrisle-ai-audit.notifications.subject_types.user_nickname',
+  user_bio: 'zephyrisle-ai-audit.notifications.subject_types.user_bio',
+  user_cover: 'zephyrisle-ai-audit.notifications.subject_types.user_cover',
+  discussion_title: 'zephyrisle-ai-audit.notifications.subject_types.discussion_title',
+  post_content: 'zephyrisle-ai-audit.notifications.subject_types.post_content',
+  post_image: 'zephyrisle-ai-audit.notifications.subject_types.post_image',
+  upload_file: 'zephyrisle-ai-audit.notifications.subject_types.upload_file',
+};
+
 export default class AiAuditLogListPage extends Page {
   loading = false;
   retryingId: string | null = null;
@@ -20,6 +44,7 @@ export default class AiAuditLogListPage extends Page {
   limit = 20;
   offset = 0;
   status = '';
+  subjectType = '';
 
   oninit(vnode: Mithril.Vnode) {
     super.oninit(vnode);
@@ -33,22 +58,46 @@ export default class AiAuditLogListPage extends Page {
           <h2>{app.translator.trans('zephyrisle-ai-audit.admin.audit_logs.title')}</h2>
 
           <div className="Form-group">
-            <label>{app.translator.trans('zephyrisle-ai-audit.admin.audit_logs.filter_status')}</label>
-            <select
-              className="FormControl"
-              value={this.status}
-              onchange={(e: Event) => {
-                this.status = (e.target as HTMLSelectElement).value;
-                this.offset = 0;
-                this.load();
-              }}
-            >
-              <option value="">{app.translator.trans('zephyrisle-ai-audit.admin.audit_logs.filter_all')}</option>
-              <option value="completed">completed</option>
-              <option value="failed">failed</option>
-              <option value="pending">pending</option>
-              <option value="retrying">retrying</option>
-            </select>
+            <div className="AiAuditLogListPage-filters">
+              <div className="Form-group">
+                <label>{app.translator.trans('zephyrisle-ai-audit.admin.audit_logs.filter_status')}</label>
+                <select
+                  className="FormControl"
+                  value={this.status}
+                  onchange={(e: Event) => {
+                    this.status = (e.target as HTMLSelectElement).value;
+                    this.offset = 0;
+                    this.load();
+                  }}
+                >
+                  <option value="">{app.translator.trans('zephyrisle-ai-audit.admin.audit_logs.filter_all')}</option>
+                  <option value="completed">completed</option>
+                  <option value="failed">failed</option>
+                  <option value="pending">pending</option>
+                  <option value="retrying">retrying</option>
+                </select>
+              </div>
+
+              <div className="Form-group">
+                <label>{app.translator.trans('zephyrisle-ai-audit.admin.audit_logs.filter_subject_type')}</label>
+                <select
+                  className="FormControl"
+                  value={this.subjectType}
+                  onchange={(e: Event) => {
+                    this.subjectType = (e.target as HTMLSelectElement).value;
+                    this.offset = 0;
+                    this.load();
+                  }}
+                >
+                  <option value="">{app.translator.trans('zephyrisle-ai-audit.admin.audit_logs.filter_all')}</option>
+                  {Object.entries(SUBJECT_LABELS).map(([key, labelKey]) => (
+                    <option value={key} key={key}>
+                      {app.translator.trans(labelKey)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           {this.loading ? (
@@ -71,25 +120,54 @@ export default class AiAuditLogListPage extends Page {
                 <tbody>
                   {this.logs.map((row) => {
                     const a = row.attributes || {};
+                    const st = a.subjectType || '';
                     const risk = typeof a.risk === 'number' ? `${(a.risk * 100).toFixed(1)}%` : '';
                     const actions = Array.isArray(a.actions) ? a.actions.join(', ') : '';
                     const createdAt = a.createdAt ? new Date(a.createdAt).toLocaleString() : '';
-                    const subject = `${a.subjectType || ''}#${a.subjectId || ''}`;
+                    const subjectIcon = SUBJECT_ICONS[st] || 'fas fa-question-circle';
+                    const subjectLabel = SUBJECT_LABELS[st]
+                      ? app.translator.trans(SUBJECT_LABELS[st])
+                      : st;
+                    const subject = `${subjectLabel}#${a.subjectId || ''}`;
                     const canRetry = a.status === 'failed';
+
+                    const riskColor =
+                      a.risk >= 0.75
+                        ? '#e74c3c'
+                        : a.risk >= 0.55
+                        ? '#f39c12'
+                        : a.risk >= 0.3
+                        ? '#3498db'
+                        : '#27ae60';
 
                     return (
                       <tr key={row.id}>
                         <td>
-                          {LinkButton.component(
-                            { href: app.route('zephyrisle-ai-audit.logs.detail', { id: row.id }) },
-                            row.id
-                          )}
+                          <LinkButton
+                            href={app.route('zephyrisle-ai-audit.logs.detail', { id: row.id })}
+                          >
+                            {row.id}
+                          </LinkButton>
                         </td>
-                        <td>{subject}</td>
+                        <td>
+                          <span className="AiAuditLogListPage-subjectType">
+                            <i className={subjectIcon} />
+                            {' '}
+                            {subject}
+                          </span>
+                        </td>
                         <td>{a.ownerId || ''}</td>
-                        <td>{risk}</td>
+                        <td>
+                          <span className="AiAuditLogListPage-riskBadge" style={{ color: riskColor }}>
+                            {risk}
+                          </span>
+                        </td>
                         <td>{actions}</td>
-                        <td>{a.status || ''}</td>
+                        <td>
+                          <span className={`AiAuditLogListPage-statusBadge AiAuditLogListPage-statusBadge--${a.status || 'unknown'}`}>
+                            {a.status || ''}
+                          </span>
+                        </td>
                         <td>{createdAt}</td>
                         <td>
                           {canRetry
@@ -109,6 +187,12 @@ export default class AiAuditLogListPage extends Page {
                   })}
                 </tbody>
               </table>
+
+              {this.logs.length === 0 && !this.loading && (
+                <div className="AiAuditLogListPage-empty">
+                  {app.translator.trans('zephyrisle-ai-audit.admin.audit_logs.no_logs')}
+                </div>
+              )}
 
               <div className="AiAuditLogListPage-pagination">
                 {Button.component(
@@ -154,6 +238,7 @@ export default class AiAuditLogListPage extends Page {
     const url = apiUrl('/ai-audit/logs');
     const filter: Record<string, string> = {};
     if (this.status) filter.status = this.status;
+    if (this.subjectType) filter.subjectType = this.subjectType;
 
     try {
       const resp = (await app.request({

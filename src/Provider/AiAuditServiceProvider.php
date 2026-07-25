@@ -3,6 +3,7 @@
 namespace ZephyrIsle\AiAudit\Provider;
 
 use Flarum\Foundation\AbstractServiceProvider;
+use Flarum\Notification\NotificationSyncer;
 use ZephyrIsle\AiAudit\Service\AuditClient;
 use ZephyrIsle\AiAudit\Service\DecisionApplier;
 use ZephyrIsle\AiAudit\Service\Flagger;
@@ -33,4 +34,3 @@ class AiAuditServiceProvider extends AbstractServiceProvider
         });
     }
 }
-

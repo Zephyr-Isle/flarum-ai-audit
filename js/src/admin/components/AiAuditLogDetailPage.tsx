@@ -10,6 +10,18 @@ type ShowResponse = {
   data: { id: string; attributes: Record<string, any> };
 };
 
+const SUBJECT_ICONS: Record<string, string> = {
+  user_username: 'fas fa-user',
+  user_avatar: 'fas fa-user-circle',
+  user_nickname: 'fas fa-tag',
+  user_bio: 'fas fa-quote-right',
+  user_cover: 'fas fa-image',
+  discussion_title: 'fas fa-heading',
+  post_content: 'fas fa-comment',
+  post_image: 'fas fa-camera',
+  upload_file: 'fas fa-file-upload',
+};
+
 export default class AiAuditLogDetailPage extends Page {
   loading = false;
   retrying = false;
@@ -50,19 +62,40 @@ export default class AiAuditLogDetailPage extends Page {
                   : null}
               </div>
 
+              <div className="AiAuditLogDetailPage-header">
+                <div className="AiAuditLogDetailPage-headerIcon">
+                  <i className={SUBJECT_ICONS[this.log.attributes.subjectType] || 'fas fa-shield-alt'} />
+                </div>
+                <div className="AiAuditLogDetailPage-headerInfo">
+                  <span className="AiAuditLogDetailPage-subjectType">
+                    {app.translator.trans(
+                      `zephyrisle-ai-audit.notifications.subject_types.${this.log.attributes.subjectType || 'unknown'}`,
+                      {},
+                      true
+                    ) || this.log.attributes.subjectType}
+                  </span>
+                  <span className={`AiAuditLogDetailPage-statusBadge AiAuditLogDetailPage-statusBadge--${this.log.attributes.status || 'unknown'}`}>
+                    {this.log.attributes.status || ''}
+                  </span>
+                </div>
+              </div>
+
               <table className="AiAuditLogDetailPage-table">
                 <tbody>
+                  {this.row('ID', this.log.id)}
                   {this.row('subjectType', this.log.attributes.subjectType)}
                   {this.row('subjectId', this.log.attributes.subjectId)}
                   {this.row('ownerId', this.log.attributes.ownerId)}
                   {this.row('actorId', this.log.attributes.actorId)}
                   {this.row('status', this.log.attributes.status)}
-                  {this.row('risk', this.log.attributes.risk)}
+                  {this.riskRow('risk', this.log.attributes.risk)}
                   {this.row('severity', this.log.attributes.severity)}
-                  {this.row('actions', JSON.stringify(this.log.attributes.actions || []))}
+                  {this.actionRow('actions', this.log.attributes.actions)}
                   {this.row('conclusion', this.log.attributes.conclusion)}
+                  {this.row('retryCount', this.log.attributes.retryCount)}
                   {this.row('createdAt', this.log.attributes.createdAt)}
                   {this.row('updatedAt', this.log.attributes.updatedAt)}
+                  {this.row('error', this.log.attributes.error)}
                 </tbody>
               </table>
 
@@ -80,10 +113,58 @@ export default class AiAuditLogDetailPage extends Page {
   }
 
   row(label: string, value: any) {
+    if (value === null || value === undefined) return null;
     return (
       <tr>
         <th>{label}</th>
-        <td>{value === null || value === undefined ? '' : String(value)}</td>
+        <td>{String(value)}</td>
+      </tr>
+    );
+  }
+
+  riskRow(label: string, value: any) {
+    if (value === null || value === undefined) return null;
+    const riskPercent = typeof value === 'number' ? `${(value * 100).toFixed(1)}%` : String(value);
+    const riskColor =
+      value >= 0.75
+        ? '#e74c3c'
+        : value >= 0.55
+        ? '#f39c12'
+        : value >= 0.3
+        ? '#3498db'
+        : '#27ae60';
+
+    return (
+      <tr>
+        <th>{label}</th>
+        <td style={{ color: riskColor, fontWeight: 'bold' }}>{riskPercent}</td>
+      </tr>
+    );
+  }
+
+  actionRow(label: string, value: any) {
+    if (!Array.isArray(value) || value.length === 0) return null;
+    const actionLabels = value.map((a: string) => {
+      return (
+        app.translator.trans(
+          `zephyrisle-ai-audit.notifications.action_labels.${a}`,
+          {},
+          true
+        ) || a
+      );
+    });
+    return (
+      <tr>
+        <th>{label}</th>
+        <td>
+          <div className="AiAuditLogDetailPage-actionTags">
+            {actionLabels.map((al: string, i: number) => (
+              <span className="AiAuditLogDetailPage-actionTag" key={i}>
+                {al}
+              </span>
+            ))}
+          </div>
+        </td>
       </tr>
     );
   }
