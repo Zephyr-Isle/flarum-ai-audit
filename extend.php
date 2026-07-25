@@ -10,7 +10,6 @@ use ZephyrIsle\AiAudit\Api\Controller\ShowAuditLogController;
 use ZephyrIsle\AiAudit\Listener\QueueAudit;
 use ZephyrIsle\AiAudit\Model\AuditLog;
 use ZephyrIsle\AiAudit\Notification\AuditNotificationBlueprint;
-use ZephyrIsle\AiAudit\Notification\AuditNotificationSerializer;
 use ZephyrIsle\AiAudit\Provider\AiAuditServiceProvider;
 
 return [
@@ -36,10 +35,10 @@ return [
         ->modelPolicy(AuditLog::class, AuditLogPolicy::class),
 
     // Notification type registration
+    // Flarum v2 signature: type(string $blueprintClass, array $driversEnabledByDefault = ['alert'])
     (new Extend\Notification())
         ->type(
             AuditNotificationBlueprint::class,
-            AuditNotificationSerializer::class,
             ['alert', 'email']
         ),
 
