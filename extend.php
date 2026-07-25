@@ -34,13 +34,6 @@ return [
     (new Extend\Policy())
         ->modelPolicy(AuditLog::class, AuditLogPolicy::class),
 
-    (new Extend\Permission())
-        ->registerPermission('zephyrisle-ai-audit.viewAuditLogs', 'moderate', 110)
-        ->registerPermission('zephyrisle-ai-audit.viewFullAuditLogs', 'moderate', 111)
-        ->registerPermission('zephyrisle-ai-audit.retryAudit', 'moderate', 112)
-        ->registerPermission('zephyrisle-ai-audit.bypassAudit', 'moderate', 113)
-        ->registerPermission('zephyrisle-ai-audit.bypassPreApprove', 'moderate', 114),
-
     (new Extend\Routes('api'))
         ->get('/ai-audit/logs', 'zephyrisle-ai-audit.logs.index', ListAuditLogsController::class)
         ->get('/ai-audit/logs/{id}', 'zephyrisle-ai-audit.logs.show', ShowAuditLogController::class)
