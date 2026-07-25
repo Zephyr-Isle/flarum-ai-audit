@@ -81,7 +81,7 @@ export default class AiAuditLogListPage extends Page {
                       <tr key={row.id}>
                         <td>
                           {LinkButton.component(
-                            { href: app.route('zephyrisle-ai-audit.log', { id: row.id }) },
+                            { href: app.route('zephyrisle-ai-audit.logs.detail', { id: row.id }) },
                             row.id
                           )}
                         </td>

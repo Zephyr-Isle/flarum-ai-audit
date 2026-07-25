@@ -12,3 +12,15 @@ User model handles multiple attribute name variations for compatibility (coverUr
 
 #### 2026-07-05
 LoginRequest uses 'identification' field instead of traditional username/email for authentication
+
+#### 2026-07-09
+Project uses Flarum v2 declarative Extender API instead of v1 imperative API, as documented in REFACTORING.md.
+
+#### 2026-07-09
+Webpack config defines admin module path as './src/admin/index.js' but the actual source file is 'index.ts'.
+
+#### 2026-07-09
+Admin settings labels are externalized to YAML translation files using keys under 'zephyrisle-ai-audit.admin.settings'.
+
+#### 2026-07-09
+Current focus is debugging backend settings not displaying in Flarum v2 admin panel.

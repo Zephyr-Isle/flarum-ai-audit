@@ -34,7 +34,7 @@ export default class AiAuditLogDetailPage extends Page {
             <div>
               <div className="AiAuditLogDetailPage-actions">
                 {Button.component(
-                  { className: 'Button Button--small', onclick: () => app.history.back() },
+                  { className: 'Button Button--small', onclick: () => m.route.set(app.route('zephyrisle-ai-audit.logs')) },
                   app.translator.trans('zephyrisle-ai-audit.admin.audit_log.back')
                 )}
                 {this.log.attributes.status === 'failed'

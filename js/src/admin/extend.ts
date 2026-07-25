@@ -17,6 +17,12 @@ export default [
    * Flarum v2 Admin settings
    */
   new Extend.Admin()
+    .page(() => ({
+      path: '/ai-audit',
+      label: t('zephyrisle-ai-audit.admin.title'),
+      icon: 'fas fa-shield-alt',
+    }))
+
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.api_endpoint',
       label: t(
@@ -213,7 +219,7 @@ export default [
       'zephyrisle-ai-audit-logs',
       () => ({
         icon: 'fas fa-shield-alt',
-        children: t(
+        label: t(
           'zephyrisle-ai-audit.admin.nav.logs'
         ),
         href: app.url('/admin/ai-audit'),
