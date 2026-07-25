@@ -34,7 +34,7 @@ return [
     (new Extend\Policy())
         ->modelPolicy(AuditLog::class, AuditLogPolicy::class),
 
-    (new Extend\Permissions())
+    (new Extend\Permission())
         ->registerPermission('zephyrisle-ai-audit.viewAuditLogs', 'moderate', 110)
         ->registerPermission('zephyrisle-ai-audit.viewFullAuditLogs', 'moderate', 111)
         ->registerPermission('zephyrisle-ai-audit.retryAudit', 'moderate', 112)
