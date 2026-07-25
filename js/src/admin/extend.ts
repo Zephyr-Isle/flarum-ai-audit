@@ -154,8 +154,7 @@ export default [
         'zephyrisle-ai-audit.admin.permissions.view_audit_logs'
       ),
       permission: 'zephyrisle-ai-audit.viewAuditLogs',
-      group: 'moderate',
-    }))
+    }), 'moderate', 110)
 
     .permission(() => ({
       icon: 'fas fa-shield-alt',
@@ -163,8 +162,7 @@ export default [
         'zephyrisle-ai-audit.admin.permissions.view_full_audit_logs'
       ),
       permission: 'zephyrisle-ai-audit.viewFullAuditLogs',
-      group: 'moderate',
-    }))
+    }), 'moderate', 109)
 
     .permission(() => ({
       icon: 'fas fa-redo',
@@ -172,8 +170,7 @@ export default [
         'zephyrisle-ai-audit.admin.permissions.retry_audit'
       ),
       permission: 'zephyrisle-ai-audit.retryAudit',
-      group: 'moderate',
-    }))
+    }), 'moderate', 108)
 
     .permission(() => ({
       icon: 'fas fa-user-check',
@@ -181,8 +178,7 @@ export default [
         'zephyrisle-ai-audit.admin.permissions.bypass_audit'
       ),
       permission: 'zephyrisle-ai-audit.bypassAudit',
-      group: 'moderate',
-    }))
+    }), 'moderate', 107)
 
     .permission(() => ({
       icon: 'fas fa-user-check',
@@ -190,8 +186,7 @@ export default [
         'zephyrisle-ai-audit.admin.permissions.bypass_pre_approve'
       ),
       permission: 'zephyrisle-ai-audit.bypassPreApprove',
-      group: 'moderate',
-    })),
+    }), 'moderate', 106),
 
 
   /**

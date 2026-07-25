@@ -1,5 +1,6 @@
 zephyrisle-ai-audit:
   admin:
+    title: AI Audit
     settings:
       title: AI Audit Settings
       api_section: API Configuration

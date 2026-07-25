@@ -1,5 +1,6 @@
 zephyrisle-ai-audit:
   admin:
+    title: AI 审计
     settings:
       title: AI 审计设置
       api_section: API 配置
