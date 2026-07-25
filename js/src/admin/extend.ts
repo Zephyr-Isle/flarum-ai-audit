@@ -252,8 +252,5 @@ export default [
       99
     ),
 
-  // ============ Store Models ============
-
-  new Extend.Store()
-    .addModel('ai-audit-logs', AiAuditLog),
+  // Store Models (registered in common/extend.ts via ...commonExtend)
 ];
