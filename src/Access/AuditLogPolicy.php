@@ -7,7 +7,7 @@ use Flarum\User\User;
 
 class AuditLogPolicy extends AbstractPolicy
 {
-    public function can(User $actor, string $ability): ?int
+    public function can(User $actor, string $ability): ?string
     {
         // Flarum's policy system automatically grants admins all permissions
         // We only need to check explicit permissions for non-admin users

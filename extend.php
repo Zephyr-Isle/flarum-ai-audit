@@ -36,10 +36,11 @@ return [
 
     // Notification type registration
     // Flarum v2 signature: type(string $blueprintClass, array $driversEnabledByDefault = ['alert'])
+    // Note: Only 'alert' is enabled by default; email requires MailableInterface implementation
     (new Extend\Notification())
         ->type(
             AuditNotificationBlueprint::class,
-            ['alert', 'email']
+            ['alert']
         ),
 
     // API routes

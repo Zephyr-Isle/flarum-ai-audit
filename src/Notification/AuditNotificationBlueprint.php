@@ -4,11 +4,12 @@ namespace ZephyrIsle\AiAudit\Notification;
 
 use Carbon\Carbon;
 use Flarum\Database\AbstractModel;
+use Flarum\Notification\AlertableInterface;
 use Flarum\Notification\Blueprint\BlueprintInterface;
 use Flarum\User\User;
 use ZephyrIsle\AiAudit\Model\AuditLog;
 
-class AuditNotificationBlueprint implements BlueprintInterface
+class AuditNotificationBlueprint implements BlueprintInterface, AlertableInterface
 {
     public function __construct(
         public AuditLog $auditLog,
