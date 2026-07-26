@@ -7,26 +7,24 @@ import AiAuditLogDetailPage from './components/AiAuditLogDetailPage';
 export default [
   ...commonExtend,
 
-  // ============ Custom Page ============
-  new Extend.Admin()
-    .page(AiAuditLogListPage),
-
   // ============ Custom Routes ============
   new Extend.Routes('admin')
     .add('zephyrisle-ai-audit.logs', '/ai-audit', AiAuditLogListPage)
     .add('zephyrisle-ai-audit.logs.detail', '/ai-audit/:id', AiAuditLogDetailPage),
 ];
 
-// ============ Settings & Permissions (registered at runtime via app.registry) ============
-// In Flarum 2.0, settings and permissions must be registered via app.registry,
-// not via Extend.Admin().setting()/.permission() which are not valid extenders.
+// ============ Settings, Pages & Permissions (registered at runtime via app.registry) ============
 
 const EXT_ID = 'zephyrisle-ai-audit';
 const t = (key: string) => app.translator.trans(key, {}, true);
 
-// Register settings when admin app is ready
 app.initializers.add(EXT_ID, () => {
   const registry = app.registry.for(EXT_ID);
+
+  // ============ Sidebar: Audit Logs Page ============
+  registry.registerPage(AiAuditLogListPage);
+
+  // ============ Settings Page (auto-generated) ============
 
   // API Configuration
   registry.registerSetting({
@@ -176,7 +174,7 @@ app.initializers.add(EXT_ID, () => {
     max: 365,
   });
 
-  // Permissions
+  // ============ Permissions ============
   registry.registerPermission(
     {
       icon: 'fas fa-shield-alt',
