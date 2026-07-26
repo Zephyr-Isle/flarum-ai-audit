@@ -6,7 +6,6 @@ import m from 'mithril';
 
 export default class AiAuditExtensionPage extends ExtensionPage {
   activeTab = 'settings';
-  logList = new AiAuditLogList();
 
   sidebar(): ItemList<any> {
     const items = new ItemList<any>();
@@ -46,7 +45,7 @@ export default class AiAuditExtensionPage extends ExtensionPage {
 
   content(): m.Children {
     if (this.activeTab === 'logs') {
-      return m(AiAuditLogList);
+      return m(AiAuditLogList, { key: 'ai-audit-logs' });
     }
 
     return super.content();

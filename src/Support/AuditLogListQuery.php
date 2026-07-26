@@ -17,7 +17,8 @@ class AuditLogListQuery
 
     public static function fromArray(array $params): self
     {
-        $filters = Arr::get($params, 'filter', []);
+        $rawFilter = Arr::get($params, 'filter', []);
+        $filters = is_array($rawFilter) ? $rawFilter : [];
 
         $sort = (string) Arr::get($params, 'sort', '-createdAt');
         $sortField = ltrim($sort, '-+');

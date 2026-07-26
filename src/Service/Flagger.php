@@ -32,17 +32,17 @@ class Flagger
 
         try {
             $flag = new $flagClass();
-            $flag->post_id = $post->id;
-            $flag->type = 'ai-audit';
-            $flag->user_id = null;
-            $flag->created_at = Carbon::now();
+            $flag->setAttribute('post_id', $post->id);
+            $flag->setAttribute('type', 'ai-audit');
+            $flag->setAttribute('user_id', null);
+            $flag->setAttribute('created_at', Carbon::now());
 
-            $flag->reason = $this->translator->trans('zephyrisle-ai-audit.flags.reason');
+            $flag->setAttribute('reason', $this->translator->trans('zephyrisle-ai-audit.flags.reason'));
             $detail = $this->translator->trans('zephyrisle-ai-audit.flags.detail_review');
             if ($log) {
                 $detail = $detail . ' #' . $log->id;
             }
-            $flag->reason_detail = $detail;
+            $flag->setAttribute('reason_detail', $detail);
             $flag->save();
             return $flag;
         } catch (\Exception $e) {

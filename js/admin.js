@@ -1,1 +1,1 @@
-export { default as extend } from './src/admin';
+export { extend } from './src/admin';

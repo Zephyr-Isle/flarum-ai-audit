@@ -77,9 +77,9 @@ class RetryAuditController implements RequestHandlerInterface
         }
 
         return match ($log->subject_type) {
-            'post' => ['content' => 'retry'],
-            'discussion' => ['title' => 'retry'],
-            'user' => ['username' => 'retry'],
+            'post_content', 'post_image', 'upload_file' => ['content' => 'retry'],
+            'discussion_title' => ['title' => 'retry'],
+            'user_username', 'user_avatar', 'user_nickname', 'user_bio', 'user_cover' => ['username' => 'retry'],
             default => [],
         };
     }

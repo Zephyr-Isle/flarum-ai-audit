@@ -28,16 +28,16 @@ class ListAuditLogsController implements RequestHandlerInterface
 
         $q = AuditLog::query();
 
-        if ($query->filters['subjectType'] !== null) {
+        if (is_array($query->filters) && isset($query->filters['subjectType'])) {
             $q->where('subject_type', $query->filters['subjectType']);
         }
-        if ($query->filters['status'] !== null) {
+        if (is_array($query->filters) && isset($query->filters['status'])) {
             $q->where('status', $query->filters['status']);
         }
-        if ($query->filters['ownerId'] !== null) {
+        if (is_array($query->filters) && isset($query->filters['ownerId'])) {
             $q->where('owner_id', $query->filters['ownerId']);
         }
-        if ($query->filters['minRisk'] !== null) {
+        if (is_array($query->filters) && isset($query->filters['minRisk'])) {
             $q->where('risk', '>=', $query->filters['minRisk']);
         }
 
