@@ -3,6 +3,7 @@ import app from 'flarum/admin/app';
 import commonExtend from '../common/extend';
 import AiAuditLogListPage from './components/AiAuditLogListPage';
 import AiAuditLogDetailPage from './components/AiAuditLogDetailPage';
+import AiAuditExtensionPage from './components/AiAuditExtensionPage';
 
 const t = (key: string) => app.translator.trans(key, {}, true);
 
@@ -10,9 +11,8 @@ export default [
   ...commonExtend,
 
   // ============ Admin: Settings, Permissions ============
-  // NOT using .page() so the auto-generated settings page works.
-  // Audit logs are accessed via the custom routes below.
   new Extend.Admin()
+    .page(AiAuditExtensionPage)
     // ============ API Configuration ============
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.api_endpoint',
