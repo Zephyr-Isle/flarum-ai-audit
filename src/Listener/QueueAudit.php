@@ -163,6 +163,21 @@ class QueueAudit
             }
         }
 
+        // Avatar changes fallback (if AvatarSaving event doesn't fire)
+        if ($this->isEnabled('avatar') && isset($event->data['attributes']['avatarUrl'])) {
+            $oldAvatarUrl = $this->getUserAttribute($user, 'avatar_url');
+
+            $user->afterSave(function ($user) use ($actor, $oldAvatarUrl) {
+                $newAvatarUrl = $this->getUserAttribute($user, 'avatar_url');
+                if ($oldAvatarUrl === $newAvatarUrl) return;
+
+                $this->queueAudit('user_avatar', $user->id, $actor?->id, $user->id, [
+                    'oldAvatarUrl' => $oldAvatarUrl,
+                    'newAvatarUrl' => $newAvatarUrl,
+                ]);
+            });
+        }
+
         if ($isNew) {
             // For new users, the username audit is already queued above
             return;
@@ -182,12 +197,17 @@ class QueueAudit
 
         if ($this->canBypass($actor)) return;
 
-        $changes = [
-            'oldAvatarUrl' => $this->getUserAttribute($user, 'avatar_url'),
-        ];
+        $oldAvatarUrl = $this->getUserAttribute($user, 'avatar_url');
 
-        $user->afterSave(function ($user) use ($actor, $changes) {
-            $this->queueAudit('user_avatar', $user->id, $actor?->id, $user->id, $changes);
+        $user->afterSave(function ($user) use ($actor, $oldAvatarUrl) {
+            $newAvatarUrl = $this->getUserAttribute($user, 'avatar_url');
+
+            if ($oldAvatarUrl === $newAvatarUrl) return;
+
+            $this->queueAudit('user_avatar', $user->id, $actor?->id, $user->id, [
+                'oldAvatarUrl' => $oldAvatarUrl,
+                'newAvatarUrl' => $newAvatarUrl,
+            ]);
         });
     }
 

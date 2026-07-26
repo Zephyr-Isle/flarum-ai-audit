@@ -120,20 +120,29 @@ class SnapshotBuilder
      */
     public function forUserAvatar(User $user, array $changes): array
     {
+        $newAvatarUrl = $changes['newAvatarUrl'] ?? $changes['avatarUrl'] ?? null;
+        $oldAvatarUrl = $changes['oldAvatarUrl'] ?? null;
+
+        $images = [];
+        if ($newAvatarUrl) {
+            $downloaded = $this->extractAndMaybeFetchImages('<img src="' . htmlspecialchars($newAvatarUrl) . '"/>');
+            $images = $downloaded;
+        }
+
         return [
             'subject_type' => 'user_avatar',
             'subject_id' => $user->id,
             'content' => [
-                'action' => isset($changes['avatarUrl']) ? 'update' : 'delete',
-                'old_avatar_url' => $changes['oldAvatarUrl'] ?? null,
-                'new_avatar_url' => $changes['avatarUrl'] ?? null,
+                'action' => $newAvatarUrl ? 'update' : 'delete',
+                'old_avatar_url' => $oldAvatarUrl,
+                'new_avatar_url' => $newAvatarUrl,
             ],
             'context' => [
                 'user_id' => $user->id,
                 'username' => $user->username,
                 'joined_at' => $user->joined_at?->toIso8601String(),
             ],
-            'images' => [],
+            'images' => $images,
         ];
     }
 
