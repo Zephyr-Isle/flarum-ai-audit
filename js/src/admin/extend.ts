@@ -63,74 +63,74 @@ export default [
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.enable_username_audit',
       label: t('zephyrisle-ai-audit.admin.settings.enable_username_audit'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.enable_avatar_audit',
       label: t('zephyrisle-ai-audit.admin.settings.enable_avatar_audit'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.enable_nickname_audit',
       label: t('zephyrisle-ai-audit.admin.settings.enable_nickname_audit'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.enable_bio_audit',
       label: t('zephyrisle-ai-audit.admin.settings.enable_bio_audit'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.enable_cover_audit',
       label: t('zephyrisle-ai-audit.admin.settings.enable_cover_audit'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.enable_post_content_audit',
       label: t('zephyrisle-ai-audit.admin.settings.enable_post_content_audit'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.enable_post_image_audit',
       label: t('zephyrisle-ai-audit.admin.settings.enable_post_image_audit'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.enable_discussion_title_audit',
       label: t('zephyrisle-ai-audit.admin.settings.enable_discussion_title_audit'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.enable_upload_audit',
       label: t('zephyrisle-ai-audit.admin.settings.enable_upload_audit'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.enable_notifications',
       label: t('zephyrisle-ai-audit.admin.settings.enable_notifications'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.use_json_schema',
       label: t('zephyrisle-ai-audit.admin.settings.use_json_schema'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.enable_context',
       label: t('zephyrisle-ai-audit.admin.settings.enable_context'),
-      type: 'boolean'
+      type: 'switch'
     }))
 
     // ============ Behavior Settings ============
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.pre_approve_enabled',
       label: t('zephyrisle-ai-audit.admin.settings.pre_approve_enabled'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.download_images',
       label: t('zephyrisle-ai-audit.admin.settings.download_images'),
-      type: 'boolean'
+      type: 'switch'
     }))
     .setting(() => ({
       setting: 'zephyrisle.ai-audit.image_download_timeout',

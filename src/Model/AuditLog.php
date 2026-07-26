@@ -24,8 +24,10 @@ class AuditLog extends AbstractModel
 {
     protected $table = 'zia_ai_audit_logs';
 
+    public $timestamps = true;
+
     protected $casts = [
-        'risk' => 'decimal:4',
+        'risk' => 'float',
         'severity' => 'integer',
         'actions' => 'array',
         'snapshot' => 'array',

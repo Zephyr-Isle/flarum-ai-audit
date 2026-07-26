@@ -89,9 +89,9 @@ class DecisionApplier
 
         $days = (int) $this->settings->get('zephyrisle.ai-audit.suspend_days', 7);
         try {
-            $owner->suspended_until = Carbon::now()->addDays(max(1, $days));
-            $owner->suspend_reason = $log->conclusion ?? '违反社区规范';
-            $owner->suspend_message = $log->conclusion ?? '您的账号因违反社区规范已被暂时封禁。';
+            $owner->setAttribute('suspended_until', Carbon::now()->addDays(max(1, $days)));
+            $owner->setAttribute('suspend_reason', $log->conclusion ?? '违反社区规范');
+            $owner->setAttribute('suspend_message', $log->conclusion ?? '您的账号因违反社区规范已被暂时封禁。');
 
             if (method_exists($owner, 'save')) {
                 $owner->save();
@@ -120,7 +120,7 @@ class DecisionApplier
                 $newUsername = 'user' . $user->id . '_' . substr(md5(uniqid()), 0, 8);
             }
 
-            $user->username = $newUsername;
+            $user->setAttribute('username', $newUsername);
             $user->save();
 
             $this->logger->info('[AI Audit] renamed user', [
@@ -158,7 +158,7 @@ class DecisionApplier
     {
         try {
             if ($this->hasColumn($user, 'nickname')) {
-                $user->nickname = '';
+                $user->setAttribute('nickname', '');
                 $user->save();
                 $this->logger->info('[AI Audit] reset nickname for user', ['user_id' => $user->id]);
             }
@@ -174,7 +174,7 @@ class DecisionApplier
     {
         try {
             if ($this->hasColumn($user, 'bio')) {
-                $user->bio = '';
+                $user->setAttribute('bio', '');
                 $user->save();
                 $this->logger->info('[AI Audit] reset bio for user', ['user_id' => $user->id]);
             }
