@@ -36,7 +36,7 @@ const SUBJECT_LABELS: Record<string, string> = {
 };
 
 export default class AiAuditLogList {
-  loading = false;
+  loading = true;
   retryingId: string | null = null;
   logs: ListResponse['data'] = [];
   total = 0;
@@ -45,7 +45,7 @@ export default class AiAuditLogList {
   status = '';
   subjectType = '';
 
-  oninit() {
+  oncreate() {
     this.load();
   }
 
@@ -229,7 +229,6 @@ export default class AiAuditLogList {
 
   async load() {
     this.loading = true;
-    m.redraw();
 
     const url = apiUrl('/ai-audit/logs');
     const filter: Record<string, string> = {};
@@ -251,14 +250,12 @@ export default class AiAuditLogList {
       showRequestError(error, 'zephyrisle-ai-audit.admin.audit_logs.errors.load');
     } finally {
       this.loading = false;
-      m.redraw();
     }
   }
 
   async retry(id: string) {
     const url = apiUrl(`/ai-audit/logs/${id}/retry`);
     this.retryingId = id;
-    m.redraw();
 
     try {
       await app.request({ method: 'POST', url });
@@ -268,7 +265,6 @@ export default class AiAuditLogList {
       showRequestError(error, 'zephyrisle-ai-audit.admin.audit_logs.errors.retry');
     } finally {
       this.retryingId = null;
-      m.redraw();
     }
   }
 }
