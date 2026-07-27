@@ -1,62 +1,33 @@
 import app from 'flarum/admin/app';
 import ExtensionPage from 'flarum/admin/components/ExtensionPage';
 import ExtensionPermissionGrid from 'flarum/admin/components/ExtensionPermissionGrid';
-import ItemList from 'flarum/common/utils/ItemList';
-import AiAuditLogList from './AiAuditLogList';
 import m from 'mithril';
 import type Mithril from 'mithril';
+import AiAuditLogList from './AiAuditLogList';
 
 export default class AiAuditExtensionPage extends ExtensionPage {
   activeTab = 'settings';
 
-  /**
-   * Override view() to inject a sidebar navigation between the header
-   * and the permissions section.
-   */
-  view(vnode: Mithril.VnodeDOM<{ id: string }, this>) {
+  content(vnode: Mithril.VnodeDOM<{ id: string }, this>) {
     if (!this.extension) return null;
 
     return (
-      <div className={'ExtensionPage ' + this.className()}>
-        {this.header()}
-        {!this.isEnabled() ? (
-          <div className="container">
-            <h3 className="ExtensionPage-subHeader">
-              {app.translator.trans('core.admin.extension.enable_to_see')}
-            </h3>
-          </div>
-        ) : (
-          <div className="ExtensionPage-body">{this.sections(vnode).toArray()}</div>
-        )}
+      <div className="AiAuditExtensionPage-layout">
+        <div className="AiAuditExtensionPage-sidebar">{this.navItems()}</div>
+        <div className="AiAuditExtensionPage-main">
+          {this.activeTab === 'logs'
+            ? m(AiAuditLogList, { key: 'ai-audit-logs' })
+            : this.settingsContent()}
+        </div>
       </div>
     );
   }
 
-  /**
-   * Override sections() to add the sidebar layout before permissions.
-   */
   sections(vnode: Mithril.VnodeDOM<{ id: string }, this>) {
-    const items = new ItemList<Mithril.Children>();
+    const items = super.sections(vnode);
 
-    // Main content area with sidebar navigation
     items.add(
-      'nav-and-content',
-      <div className="container">
-        <div className="AiAuditExtensionPage-layout">
-          <div className="AiAuditExtensionPage-sidebar">{this.navItems()}</div>
-          <div className="AiAuditExtensionPage-main">
-            {this.activeTab === 'logs'
-              ? m(AiAuditLogList, { key: 'ai-audit-logs' })
-              : this.settingsContent()}
-          </div>
-        </div>
-      </div>,
-      100
-    );
-
-    // Permissions section (same as original ExtensionPage)
-    items.add(
-      'permissions',
+      'ai-audit-permissions',
       <div className="ExtensionPage-permissions">
         <div className="ExtensionPage-permissions-header">
           <div className="container">
@@ -81,9 +52,6 @@ export default class AiAuditExtensionPage extends ExtensionPage {
     return items;
   }
 
-  /**
-   * Build the settings form (reuses ExtensionPage's buildSettingComponent).
-   */
   settingsContent() {
     const settings = app.extensionData.getSettings(this.extension.id);
     return (
@@ -102,9 +70,6 @@ export default class AiAuditExtensionPage extends ExtensionPage {
     );
   }
 
-  /**
-   * Render the sidebar navigation buttons.
-   */
   navItems() {
     return [
       m(
