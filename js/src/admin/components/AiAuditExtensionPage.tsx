@@ -1,6 +1,5 @@
 import app from 'flarum/admin/app';
 import ExtensionPage from 'flarum/admin/components/ExtensionPage';
-import ExtensionPermissionGrid from 'flarum/admin/components/ExtensionPermissionGrid';
 import Button from 'flarum/common/components/Button';
 import m from 'mithril';
 import AiAuditLogList from './AiAuditLogList';
@@ -8,46 +7,42 @@ import AiAuditLogList from './AiAuditLogList';
 export default class AiAuditExtensionPage extends ExtensionPage {
   activeTab = 'settings';
 
-  content() {
+  view(vnode: any) {
     if (!this.extension) return null;
 
-    const settings = app.extensionData?.getSettings(this.extension.id);
+    const icon = this.extension.icon;
 
     return (
-      <div>
-        <div className="AiAuditExtensionPage-layout">
-          <div className="AiAuditExtensionPage-sidebar">{this.navItems()}</div>
-          <div className="AiAuditExtensionPage-main">
-            <div style={this.activeTab !== 'settings' ? { display: 'none' } : {}}>
-              <div className="ExtensionPage-settings">
-                {settings ? (
-                  <div className="Form">
-                    {settings.map(this.buildSettingComponent.bind(this))}
-                    <div className="Form-group">{this.submitButton()}</div>
-                  </div>
-                ) : (
-                  <h3 className="ExtensionPage-subHeader">
-                    {app.translator.trans('core.admin.extension.no_settings')}
-                  </h3>
-                )}
-              </div>
+      <div className="ExtensionPage">
+        <div className="ExtensionPage-header">
+          <div className="container">
+            <div className="ExtensionPage-header-icon">
+              {icon ? (
+                <i className={icon.name} style={{ background: icon.backgroundColor, color: icon.color }} />
+              ) : (
+                <i className="fas fa-puzzle-piece" />
+              )}
             </div>
-            <div style={this.activeTab !== 'logs' ? { display: 'none' } : {}}>
-              {m(AiAuditLogList)}
+            <div className="ExtensionPage-header-title">
+              <h2 className="ExtensionTitle">{this.extension.extra?.title}</h2>
+              <span className="ExtensionVersion">{this.extension.version}</span>
             </div>
           </div>
         </div>
-        <div className="ExtensionPage-permissions">
-          <h2 className="ExtensionTitle">
-            {app.translator.trans('core.admin.extension.permissions_title')}
-          </h2>
-          {app.extensionData?.extensionHasPermissions(this.extension.id) ? (
-            <ExtensionPermissionGrid extensionId={this.extension.id} />
-          ) : (
-            <h3 className="ExtensionPage-subHeader">
-              {app.translator.trans('core.admin.extension.no_permissions')}
-            </h3>
-          )}
+        <div className="ExtensionPage-body">
+          <div className="container">
+            <div className="AiAuditExtensionPage-layout">
+              <div className="AiAuditExtensionPage-sidebar">{this.navItems()}</div>
+              <div className="AiAuditExtensionPage-main">
+                <div style={this.activeTab !== 'settings' ? { display: 'none' } : {}}>
+                  {this.content(vnode)}
+                </div>
+                <div style={this.activeTab !== 'logs' ? { display: 'none' } : {}}>
+                  {m(AiAuditLogList)}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
