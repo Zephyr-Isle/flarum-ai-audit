@@ -1,6 +1,7 @@
 import app from 'flarum/admin/app';
 import ExtensionPage from 'flarum/admin/components/ExtensionPage';
 import Button from 'flarum/common/components/Button';
+import ExtensionPermissionGrid from 'flarum/admin/components/ExtensionPermissionGrid';
 import m from 'mithril';
 import AiAuditLogList from './AiAuditLogList';
 
@@ -10,15 +11,13 @@ export default class AiAuditExtensionPage extends ExtensionPage {
   view(vnode: any) {
     if (!this.extension) return null;
 
-    const icon = this.extension.icon;
-
     return (
       <div className="ExtensionPage">
         <div className="ExtensionPage-header">
           <div className="container">
             <div className="ExtensionPage-header-icon">
-              {icon ? (
-                <i className={icon.name} style={{ background: icon.backgroundColor, color: icon.color }} />
+              {this.extension.icon ? (
+                <i className={this.extension.icon.name} style={{ background: this.extension.icon.backgroundColor, color: this.extension.icon.color }} />
               ) : (
                 <i className="fas fa-puzzle-piece" />
               )}
@@ -36,6 +35,18 @@ export default class AiAuditExtensionPage extends ExtensionPage {
               <div className="AiAuditExtensionPage-main">
                 <div style={this.activeTab !== 'settings' ? { display: 'none' } : {}}>
                   {this.content(vnode)}
+                  {app.registry.extensionHasPermissions(this.extension.id) ? (
+                    <div className="ExtensionPage-permissions">
+                      <div className="ExtensionPage-permissions-header">
+                        <div className="container">
+                          <h2 className="ExtensionTitle">{app.translator.trans('core.admin.extension.permissions_title')}</h2>
+                        </div>
+                      </div>
+                      <div className="container">
+                        <ExtensionPermissionGrid extensionId={this.extension.id} />
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
                 <div style={this.activeTab !== 'logs' ? { display: 'none' } : {}}>
                   {m(AiAuditLogList)}
