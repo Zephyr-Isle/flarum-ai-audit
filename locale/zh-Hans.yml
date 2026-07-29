@@ -126,15 +126,3 @@ zephyrisle-ai-audit:
       reset_bio: 签名已重置
       delete_cover: 封面图已删除
       flag: 已标记
-      suicide_alert: 自杀/自残预警
-
-  forum:
-    suicide_warm_modal:
-      title: 给你的悄悄话
-      message: "嗨，我们注意到你刚才的发言似乎透露了一些不安的情绪。\n\n你的感受很重要，也很真实。\n\n无论你正在经历什么，请记住——你并不孤单。"
-      encouragement: 一切都会好起来的。请给自己一个温柔的拥抱。
-      resources_title: 如果你需要倾诉，这里有些资源可以帮到你：
-      resource_line1: "希望 24 热线：400-161-9995"
-      resource_line2: "全国生命危机干预热线：010-82951332"
-      resource_line3: 也可以和你信任的亲友聊聊，或联系论坛管理员
-      dismiss: 我没事，谢谢你

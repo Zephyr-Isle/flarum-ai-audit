@@ -79,9 +79,8 @@ class AuditJob extends AbstractJob
             $log->conclusion = (string) ($decision['conclusion'] ?? '');
             $log->markCompleted();
 
-            // Apply decisions (bypassed = only suicide_alert allowed)
-            $bypassed = !empty($this->changes['_bypassed']);
-            $applier->apply($log, $owner, $subject, null, $bypassed);
+            // Apply decisions
+            $applier->apply($log, $owner, $subject);
 
             // Send notification to content owner if action was taken
             if (!in_array('none', $log->actions ?? [], true) && !empty($log->actions)) {

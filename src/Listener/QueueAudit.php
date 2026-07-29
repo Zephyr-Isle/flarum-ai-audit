@@ -61,7 +61,7 @@ class QueueAudit
         $actor = $event->actor;
 
         if (!$post instanceof CommentPost) return;
-        $bypassed = $this->canBypass($actor);
+        if ($this->canBypass($actor)) return;
 
         $isNew = !$post->exists;
         $edited = $post->exists && isset($event->data['attributes']['content']);
@@ -71,16 +71,16 @@ class QueueAudit
             $this->setUnapproved($post);
         }
 
-        $post->afterSave(function ($post) use ($actor, $bypassed) {
+        $post->afterSave(function ($post) use ($actor) {
             $this->queueAudit('post_content', $post->id, $actor?->id, $post->user_id, [
                 'content' => $post->content,
-            ], $bypassed);
+            ]);
 
             // Check for images in content
             if ($this->isEnabled('post_image') && $this->hasImageUrls((string) $post->content)) {
                 $this->queueAudit('post_image', $post->id, $actor?->id, $post->user_id, [
                     'content' => $post->content,
-                ], $bypassed);
+                ]);
             }
         });
     }
@@ -96,15 +96,15 @@ class QueueAudit
         $discussion = $event->discussion;
         $actor = $event->actor;
 
-        $bypassed = $this->canBypass($actor);
+        if ($this->canBypass($actor)) return;
 
         $titleChanged = $discussion->exists && isset($event->data['attributes']['title']);
         if (!$titleChanged) return;
 
-        $discussion->afterSave(function ($discussion) use ($actor, $bypassed) {
+        $discussion->afterSave(function ($discussion) use ($actor) {
             $this->queueAudit('discussion_title', $discussion->id, $actor?->id, $discussion->user_id, [
                 'title' => $discussion->title,
-            ], $bypassed);
+            ]);
         });
     }
 
@@ -117,7 +117,7 @@ class QueueAudit
         $user = $event->user;
         $actor = $event->actor;
 
-        $bypassed = $this->canBypass($actor);
+        if ($this->canBypass($actor)) return;
 
         $isNew = !$user->exists;
         $changes = [];
@@ -128,8 +128,8 @@ class QueueAudit
             $changes['oldUsername'] = $user->getOriginal('username') ?? $user->username;
 
             // Queue username audit
-            $user->afterSave(function ($user) use ($actor, $changes, $bypassed) {
-                $this->queueAudit('user_username', $user->id, $actor?->id, $user->id, $changes, $bypassed);
+            $user->afterSave(function ($user) use ($actor, $changes) {
+                $this->queueAudit('user_username', $user->id, $actor?->id, $user->id, $changes);
             });
         }
 
@@ -137,11 +137,11 @@ class QueueAudit
         if ($this->isEnabled('nickname') && isset($event->data['attributes']['nickname'])) {
             $oldNickname = $this->getUserAttribute($user, 'nickname') ?? '';
 
-            $user->afterSave(function ($user) use ($actor, $oldNickname, $bypassed) {
+            $user->afterSave(function ($user) use ($actor, $oldNickname) {
                 $this->queueAudit('user_nickname', $user->id, $actor?->id, $user->id, [
                     'nickname' => $user->nickname ?? '',
                     'oldNickname' => $oldNickname,
-                ], $bypassed);
+                ]);
             });
         }
 
@@ -149,11 +149,11 @@ class QueueAudit
         if ($this->isEnabled('bio') && isset($event->data['attributes']['bio'])) {
             $oldBio = $this->getUserAttribute($user, 'bio') ?? '';
 
-            $user->afterSave(function ($user) use ($actor, $oldBio, $bypassed) {
+            $user->afterSave(function ($user) use ($actor, $oldBio) {
                 $this->queueAudit('user_bio', $user->id, $actor?->id, $user->id, [
                     'bio' => $user->bio ?? '',
                     'oldBio' => $oldBio,
-                ], $bypassed);
+                ]);
             });
         }
 
@@ -163,8 +163,8 @@ class QueueAudit
                 if (isset($event->data['attributes'][$coverKey])) {
                     $coverChanges = ['cover' => $event->data['attributes'][$coverKey]];
 
-                    $user->afterSave(function ($user) use ($actor, $coverChanges, $bypassed) {
-                        $this->queueAudit('user_cover', $user->id, $actor?->id, $user->id, $coverChanges, $bypassed);
+                    $user->afterSave(function ($user) use ($actor, $coverChanges) {
+                        $this->queueAudit('user_cover', $user->id, $actor?->id, $user->id, $coverChanges);
                     });
                     break;
                 }
@@ -175,14 +175,14 @@ class QueueAudit
         if ($this->isEnabled('avatar') && isset($event->data['attributes']['avatarUrl'])) {
             $oldAvatarUrl = $this->getUserAttribute($user, 'avatar_url');
 
-            $user->afterSave(function ($user) use ($actor, $oldAvatarUrl, $bypassed) {
+            $user->afterSave(function ($user) use ($actor, $oldAvatarUrl) {
                 $newAvatarUrl = $this->getUserAttribute($user, 'avatar_url');
                 if ($oldAvatarUrl === $newAvatarUrl) return;
 
                 $this->queueAudit('user_avatar', $user->id, $actor?->id, $user->id, [
                     'oldAvatarUrl' => $oldAvatarUrl,
                     'newAvatarUrl' => $newAvatarUrl,
-                ], $bypassed);
+                ]);
             });
         }
 
@@ -203,11 +203,11 @@ class QueueAudit
         $user = $event->user;
         $actor = $event->actor;
 
-        $bypassed = $this->canBypass($actor);
+        if ($this->canBypass($actor)) return;
 
         $oldAvatarUrl = $this->getUserAttribute($user, 'avatar_url');
 
-        $user->afterSave(function ($user) use ($actor, $oldAvatarUrl, $bypassed) {
+        $user->afterSave(function ($user) use ($actor, $oldAvatarUrl) {
             $newAvatarUrl = $this->getUserAttribute($user, 'avatar_url');
 
             if ($oldAvatarUrl === $newAvatarUrl) return;
@@ -215,7 +215,7 @@ class QueueAudit
             $this->queueAudit('user_avatar', $user->id, $actor?->id, $user->id, [
                 'oldAvatarUrl' => $oldAvatarUrl,
                 'newAvatarUrl' => $newAvatarUrl,
-            ], $bypassed);
+            ]);
         });
     }
 
@@ -228,12 +228,14 @@ class QueueAudit
         if (!$this->isEnabled('message')) return;
 
         $message = $event->message;
-        $bypassed = $this->canBypass($message->user);
+        $actor = null;
+
+        if ($this->canBypass($message->user)) return;
 
         $this->queueAudit('dialog_message', $message->id, $message->user_id, $message->user_id, [
             'content' => $message->content,
             'dialog_id' => $message->dialog_id,
-        ], $bypassed);
+        ]);
     }
 
     public function onDialogMessageUpdated(object $event): void
@@ -241,12 +243,13 @@ class QueueAudit
         if (!$this->isEnabled('message')) return;
 
         $message = $event->message;
-        $bypassed = $this->canBypass($message->user);
+
+        if ($this->canBypass($message->user)) return;
 
         $this->queueAudit('dialog_message', $message->id, $message->user_id, $message->user_id, [
             'content' => $message->content,
             'dialog_id' => $message->dialog_id,
-        ], $bypassed);
+        ]);
     }
 
     // ================================================================
@@ -257,46 +260,45 @@ class QueueAudit
     {
         if (!$this->isEnabled('upload')) return;
 
+        // fof/upload FileWillBeUploaded event - queue audit before file is saved
+        // The event has: $event->actor, $event->file (instance of FoF\Upload\File)
         $actor = $event->actor ?? null;
         $file = $event->file ?? null;
 
         if (!$file || !method_exists($file, 'post') || !$file->post) return;
-        $bypassed = $this->canBypass($actor);
+        if ($this->canBypass($actor)) return;
 
         $post = $file->post;
 
         $this->queueAudit('upload_file', $post->id, $actor?->id, $post->user_id, [
             'file_name' => method_exists($file, 'getDisplayName') ? $file->getDisplayName() : 'unknown',
-        ], $bypassed);
+        ]);
     }
 
     public function onFileUploaded(object $event): void
     {
         if (!$this->isEnabled('upload')) return;
 
+        // Alternative: fof/upload FileWasUploaded event
         $actor = $event->actor ?? null;
         $file = $event->file ?? null;
 
         if (!$file || !method_exists($file, 'post') || !$file->post) return;
-        $bypassed = $this->canBypass($actor);
+        if ($this->canBypass($actor)) return;
 
         $post = $file->post;
 
         $this->queueAudit('upload_file', $post->id, $actor?->id, $post->user_id, [
             'file_name' => method_exists($file, 'getDisplayName') ? $file->getDisplayName() : 'unknown',
-        ], $bypassed);
+        ]);
     }
 
     // ================================================================
     //  HELPERS
     // ================================================================
 
-    private function queueAudit(string $subjectType, ?int $subjectId, ?int $actorId, ?int $ownerId, array $changes, bool $bypassed = false): void
+    private function queueAudit(string $subjectType, ?int $subjectId, ?int $actorId, ?int $ownerId, array $changes): void
     {
-        if ($bypassed) {
-            $changes['_bypassed'] = true;
-        }
-
         $log = new AuditLog([
             'subject_type' => $subjectType,
             'subject_id' => $subjectId,

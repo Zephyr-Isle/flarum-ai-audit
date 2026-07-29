@@ -20,7 +20,6 @@ const SUBJECT_ICONS: Record<string, string> = {
   post_content: 'fas fa-comment',
   post_image: 'fas fa-camera',
   upload_file: 'fas fa-file-upload',
-  dialog_message: 'fas fa-envelope',
 };
 
 export default class AiAuditLogDetailPage extends Page {

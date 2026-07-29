@@ -24,9 +24,6 @@ class ShowAuditLogController implements RequestHandlerInterface
         }
 
         $id = $request->getAttribute('id');
-        if (!$id) {
-            return new JsonResponse(['errors' => [['status' => '404', 'detail' => 'Not found']]], 404);
-        }
         $log = AuditLog::findOrFail($id);
 
         $attrs = [

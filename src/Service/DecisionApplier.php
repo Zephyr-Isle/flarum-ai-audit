@@ -4,38 +4,27 @@ namespace ZephyrIsle\AiAudit\Service;
 
 use Carbon\Carbon;
 use Flarum\Discussion\Discussion;
-use Flarum\Group\Group;
 use Flarum\Messages\DialogMessage;
-use Flarum\Notification\NotificationSyncer;
 use Flarum\Post\Post;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\User;
 use Psr\Log\LoggerInterface;
 use ZephyrIsle\AiAudit\Model\AuditLog;
-use ZephyrIsle\AiAudit\Notification\AuditNotificationBlueprint;
-use ZephyrIsle\AiAudit\Notification\SuicideSelfAlertBlueprint;
 
 class DecisionApplier
 {
     public function __construct(
         private SettingsRepositoryInterface $settings,
         private LoggerInterface $logger,
-        private Flagger $flagger,
-        private NotificationSyncer $notifications
+        private Flagger $flagger
     ) {
     }
 
-    public function apply(AuditLog $log, User $owner, $subject, ?User $actor = null, bool $bypassed = false): void
+    public function apply(AuditLog $log, User $owner, $subject, ?User $actor = null): void
     {
         $actions = is_array($log->actions) ? $log->actions : [];
 
-        // Bypassed users: only suicide_alert is allowed, strip everything else
-        if ($bypassed) {
-            $actions = in_array('suicide_alert', $actions, true) ? ['suicide_alert'] : ['none'];
-            $log->actions = $actions;
-        }
-
-        // If only 'review' or 'suicide_alert' - flag for manual review, no auto-action
+        // If only 'review' - flag for manual review, no auto-action
         $hasAutoAction = false;
         foreach (['hide', 'delete', 'suspend', 'rename', 'delete_avatar', 'reset_nickname', 'reset_bio', 'delete_cover'] as $a) {
             if (in_array($a, $actions, true)) {
@@ -44,13 +33,8 @@ class DecisionApplier
             }
         }
 
-        if (!$hasAutoAction && (in_array('review', $actions, true) || in_array('suicide_alert', $actions, true))) {
-            if (in_array('suicide_alert', $actions, true)) {
-                $this->handleSuicideAlert($subject, $log);
-            }
-            if (in_array('review', $actions, true)) {
-                $this->flagger->flagForReview($subject, $log);
-            }
+        if (!$hasAutoAction && in_array('review', $actions, true)) {
+            $this->flagger->flagForReview($subject, $log);
             return;
         }
 
@@ -66,7 +50,6 @@ class DecisionApplier
                 'reset_bio' => $this->resetUserBio($owner),
                 'delete_cover' => $this->deleteUserCover($owner),
                 'flag' => $this->flagger->flagForReview($subject, $log),
-                'suicide_alert' => $this->handleSuicideAlert($subject, $log),
                 default => null,
             };
         }
@@ -246,65 +229,6 @@ class DecisionApplier
         } catch (\Exception $e) {
             $this->logger->warning('[AI Audit] failed to delete cover', ['error' => $e->getMessage()]);
         }
-    }
-
-    /**
-     * Handle a suicide/self-harm alert - flag for admin intervention without punishing the user.
-     */
-    private function handleSuicideAlert($subject, AuditLog $log): void
-    {
-        $flag = $this->flagger->flagForReview($subject, $log);
-        if ($flag) {
-            try {
-                $flag->setAttribute('type', 'suicide_alert');
-                $flag->setAttribute('reason', '检测到自杀/自残倾向 - 请管理员及时介入');
-                $flag->save();
-            } catch (\Exception $e) {
-                $this->logger->warning('[AI Audit] failed to update suicide alert flag', ['error' => $e->getMessage()]);
-            }
-        }
-
-        $this->logger->critical('[AI Audit] SUICIDE ALERT detected', [
-            'log_id' => $log->id,
-            'subject_type' => $log->subject_type,
-            'subject_id' => $log->subject_id,
-            'owner_id' => $log->owner_id,
-            'conclusion' => $log->conclusion,
-        ]);
-
-        // 1. Send notification to the affected user (triggers frontend modal)
-        try {
-            $owner = $log->owner_id ? User::find($log->owner_id) : null;
-            if ($owner) {
-                $selfBlueprint = new SuicideSelfAlertBlueprint($log, $owner);
-                $this->notifications->sync($selfBlueprint, [$owner]);
-                $this->logger->info('[AI Audit] suicide self-alert notification sent', ['user_id' => $owner->id]);
-            }
-        } catch (\Exception $e) {
-            $this->logger->warning('[AI Audit] failed to send self-alert notification', ['error' => $e->getMessage()]);
-        }
-
-        // 2. Notify all users in admin group or with view_audit_logs permission
-        try {
-            $adminGroupId = defined(Group::class . '::ADMINISTRATOR_ID') ? Group::ADMINISTRATOR_ID : 1;
-            $admins = User::whereHas('groups', function ($q) use ($adminGroupId) {
-                $q->where('group_id', $adminGroupId)
-                  ->orWhereIn('group_id', function ($sub) {
-                      $sub->select('group_id')
-                          ->from('group_permission')
-                          ->where('permission', 'zephyrisle-ai-audit.viewAuditLogs');
-                  });
-            })->get();
-
-            if ($admins->isNotEmpty()) {
-                $adminBlueprint = new AuditNotificationBlueprint($log, $admins->first());
-                $this->notifications->sync($adminBlueprint, $admins->all());
-                $this->logger->info('[AI Audit] admin suicide alert sent', ['admin_count' => $admins->count()]);
-            }
-        } catch (\Exception $e) {
-            $this->logger->warning('[AI Audit] failed to send admin notification', ['error' => $e->getMessage()]);
-        }
-
     }
 
     private function supportsApproval($model): bool
