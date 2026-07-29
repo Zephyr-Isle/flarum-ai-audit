@@ -4,15 +4,14 @@ export default function () {
   Promise.resolve().then(() => {
     if (!app.session?.user) return;
 
-    app.store.find('notifications').then((notifications: any[]) => {
-      const suicideAlerts = notifications.filter((n: any) => {
-        const type = n.attribute('type') || n.data?.attributes?.type || n.contentType?.();
-        return type === 'suicideSelfAlert';
-      });
-
-      if (suicideAlerts.length > 0) {
+    const apiUrl = app.forum.attribute<string>('apiUrl');
+    app.request({
+      method: 'GET',
+      url: `${apiUrl}/ai-audit/suicide-check`,
+    }).then((resp: any) => {
+      if (resp?.hasAlert) {
         app.modal.show(SuicideWarmModal);
       }
-    });
+    }).catch(() => {});
   });
 }

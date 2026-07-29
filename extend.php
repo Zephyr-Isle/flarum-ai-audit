@@ -4,6 +4,7 @@ namespace ZephyrIsle\AiAudit;
 
 use Flarum\Extend;
 use ZephyrIsle\AiAudit\Access\AuditLogPolicy;
+use ZephyrIsle\AiAudit\Api\Controller\CheckSuicideAlertController;
 use ZephyrIsle\AiAudit\Api\Controller\ListAuditLogsController;
 use ZephyrIsle\AiAudit\Api\Controller\RetryAuditController;
 use ZephyrIsle\AiAudit\Api\Controller\ShowAuditLogController;
@@ -52,7 +53,8 @@ return [
     (new Extend\Routes('api'))
         ->get('/ai-audit/logs', 'zephyrisle-ai-audit.logs.index', ListAuditLogsController::class)
         ->get('/ai-audit/logs/{id}', 'zephyrisle-ai-audit.logs.show', ShowAuditLogController::class)
-        ->post('/ai-audit/logs/{id}/retry', 'zephyrisle-ai-audit.logs.retry', RetryAuditController::class),
+        ->post('/ai-audit/logs/{id}/retry', 'zephyrisle-ai-audit.logs.retry', RetryAuditController::class)
+        ->get('/ai-audit/suicide-check', 'zephyrisle-ai-audit.suicide-check', CheckSuicideAlertController::class),
 
     // Default settings
     (new Extend\Settings())
