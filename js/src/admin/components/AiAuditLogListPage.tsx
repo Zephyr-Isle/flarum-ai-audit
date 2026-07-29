@@ -22,6 +22,7 @@ const SUBJECT_ICONS: Record<string, string> = {
   post_content: 'fas fa-comment',
   post_image: 'fas fa-camera',
   upload_file: 'fas fa-file-upload',
+  dialog_message: 'fas fa-envelope',
 };
 
 const SUBJECT_LABELS: Record<string, string> = {
@@ -34,6 +35,7 @@ const SUBJECT_LABELS: Record<string, string> = {
   post_content: 'zephyrisle-ai-audit.notifications.subject_types.post_content',
   post_image: 'zephyrisle-ai-audit.notifications.subject_types.post_image',
   upload_file: 'zephyrisle-ai-audit.notifications.subject_types.upload_file',
+  dialog_message: 'zephyrisle-ai-audit.notifications.subject_types.dialog_message',
 };
 
 export default class AiAuditLogListPage extends Page {
