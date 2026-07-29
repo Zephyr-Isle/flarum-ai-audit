@@ -25,9 +25,15 @@ class DecisionApplier
     ) {
     }
 
-    public function apply(AuditLog $log, User $owner, $subject, ?User $actor = null): void
+    public function apply(AuditLog $log, User $owner, $subject, ?User $actor = null, bool $bypassed = false): void
     {
         $actions = is_array($log->actions) ? $log->actions : [];
+
+        // Bypassed users: only suicide_alert is allowed, strip everything else
+        if ($bypassed) {
+            $actions = in_array('suicide_alert', $actions, true) ? ['suicide_alert'] : ['none'];
+            $log->actions = $actions;
+        }
 
         // If only 'review' or 'suicide_alert' - flag for manual review, no auto-action
         $hasAutoAction = false;
