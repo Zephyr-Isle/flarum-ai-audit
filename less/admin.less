@@ -28,15 +28,15 @@
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
-    color: #7c878e;
+    color: var(--muted-color);
   }
 }
 
 .AiAuditLogListPage-tableWrap {
   overflow-x: auto;
-  background: #fff;
+  background: var(--bg);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow);
 }
 
 .AiAuditLogListPage-table {
@@ -46,23 +46,23 @@
   th, td {
     padding: 12px 16px;
     text-align: left;
-    border-bottom: 1px solid #eef1f3;
+    border-bottom: 1px solid var(--control-bg);
     white-space: nowrap;
   }
 
   th {
-    background: #f8f9fa;
+    background: var(--control-bg);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    color: #7c878e;
+    color: var(--muted-color);
     letter-spacing: 0.5px;
     position: sticky;
     top: 0;
   }
 
   tbody tr:hover {
-    background: #f0f3f8;
+    background: var(--control-bg);
   }
 
   tbody tr:last-child td {
@@ -77,7 +77,7 @@
   font-size: 13px;
 
   i {
-    color: #5369d8;
+    color: var(--color);
     width: 16px;
     text-align: center;
   }
@@ -99,28 +99,28 @@
   letter-spacing: 0.3px;
 
   &--completed {
-    background: #d4edda;
-    color: #155724;
+    background: var(--color);
+    color: var(--body-bg);
   }
 
   &--failed {
-    background: #f8d7da;
-    color: #721c24;
+    background: var(--muted-color);
+    color: var(--body-bg);
   }
 
   &--pending {
-    background: #fff3cd;
-    color: #856404;
+    background: var(--muted-color);
+    color: var(--body-bg);
   }
 
   &--retrying {
-    background: #cce5ff;
-    color: #004085;
+    background: var(--color);
+    color: var(--body-bg);
   }
 
   &--unknown {
-    background: #e2e3e5;
-    color: #383d41;
+    background: var(--control-bg);
+    color: var(--muted-color);
   }
 }
 
@@ -130,20 +130,20 @@
   justify-content: center;
   gap: 16px;
   padding: 16px;
-  background: #f8f9fa;
-  border-top: 1px solid #eef1f3;
+  background: var(--control-bg);
+  border-top: 1px solid var(--control-bg);
   border-radius: 0 0 8px 8px;
 }
 
 .AiAuditLogListPage-pageInfo {
   font-size: 13px;
-  color: #7c878e;
+  color: var(--muted-color);
 }
 
 .AiAuditLogListPage-empty {
   padding: 40px;
   text-align: center;
-  color: #7c878e;
+  color: var(--muted-color);
   font-size: 14px;
 }
 
@@ -173,11 +173,11 @@
 
     &:not(.Button--primary) {
       background: transparent;
-      color: #4a5568;
+      color: var(--text-color);
 
       &:hover {
-        background: #edf2f7;
-        color: #2d3748;
+        background: var(--control-bg);
+        color: var(--color);
       }
     }
   }
@@ -191,7 +191,7 @@
 .ExtensionPage-permissions {
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid #e6eaed;
+  border-top: 1px solid var(--control-bg);
 
   .ExtensionTitle {
     font-size: 16px;
@@ -215,9 +215,9 @@
   align-items: center;
   gap: 16px;
   padding: 20px 24px;
-  background: #fff;
+  background: var(--bg);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow);
   margin-bottom: 20px;
 }
 
@@ -227,10 +227,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #eef1fb;
+  background: var(--control-bg);
   border-radius: 12px;
   font-size: 24px;
-  color: #5369d8;
+  color: var(--color);
 }
 
 .AiAuditLogDetailPage-headerInfo {
@@ -254,28 +254,28 @@
   letter-spacing: 0.3px;
 
   &--completed {
-    background: #d4edda;
-    color: #155724;
+    background: var(--color);
+    color: var(--body-bg);
   }
 
   &--failed {
-    background: #f8d7da;
-    color: #721c24;
+    background: var(--muted-color);
+    color: var(--body-bg);
   }
 
   &--pending {
-    background: #fff3cd;
-    color: #856404;
+    background: var(--muted-color);
+    color: var(--body-bg);
   }
 
   &--retrying {
-    background: #cce5ff;
-    color: #004085;
+    background: var(--color);
+    color: var(--body-bg);
   }
 
   &--unknown {
-    background: #e2e3e5;
-    color: #383d41;
+    background: var(--control-bg);
+    color: var(--muted-color);
   }
 }
 
@@ -287,29 +287,29 @@
 
 .AiAuditLogDetailPage-table {
   width: 100%;
-  background: #fff;
+  background: var(--bg);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow);
   margin-bottom: 20px;
   border-collapse: collapse;
 
   th, td {
     padding: 10px 16px;
-    border-bottom: 1px solid #eef1f3;
+    border-bottom: 1px solid var(--control-bg);
     font-size: 13px;
   }
 
   th {
     width: 140px;
     font-weight: 600;
-    color: #7c878e;
-    background: #f8f9fa;
+    color: var(--muted-color);
+    background: var(--control-bg);
     text-align: right;
     white-space: nowrap;
   }
 
   td {
-    color: #2c3e50;
+    color: var(--text-color);
     word-break: break-all;
   }
 }
@@ -323,17 +323,17 @@
 .AiAuditLogDetailPage-actionTag {
   display: inline-block;
   padding: 3px 10px;
-  background: #eef1fb;
-  color: #5369d8;
+  background: var(--control-bg);
+  color: var(--color);
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
 }
 
 .AiAuditLogDetailPage-json {
-  background: #fff;
+  background: var(--bg);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow);
   margin-bottom: 20px;
   overflow: hidden;
 
@@ -342,9 +342,9 @@
     margin: 0;
     font-size: 14px;
     font-weight: 600;
-    background: #f8f9fa;
-    border-bottom: 1px solid #eef1f3;
-    color: #2c3e50;
+    background: var(--control-bg);
+    border-bottom: 1px solid var(--control-bg);
+    color: var(--text-color);
   }
 
   pre {
@@ -353,7 +353,7 @@
     overflow-x: auto;
     font-size: 12px;
     line-height: 1.5;
-    color: #2c3e50;
+    color: var(--text-color);
     max-height: 500px;
   }
 }
@@ -361,5 +361,5 @@
 .AiAuditLogDetailPage-empty {
   padding: 40px;
   text-align: center;
-  color: #7c878e;
+  color: var(--muted-color);
 }
