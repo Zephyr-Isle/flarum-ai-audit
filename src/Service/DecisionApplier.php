@@ -4,18 +4,27 @@ namespace ZephyrIsle\AiAudit\Service;
 
 use Carbon\Carbon;
 use Flarum\Discussion\Discussion;
+use Flarum\Group\Group;
+use Flarum\Messages\DialogMessage;
+use Flarum\Notification\NotificationSyncer;
 use Flarum\Post\Post;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\User;
+use Illuminate\Contracts\Queue\Queue;
 use Psr\Log\LoggerInterface;
+use ZephyrIsle\AiAudit\Job\SuicideEchoJob;
 use ZephyrIsle\AiAudit\Model\AuditLog;
+use ZephyrIsle\AiAudit\Notification\AuditNotificationBlueprint;
+use ZephyrIsle\AiAudit\Notification\SuicideSelfAlertBlueprint;
 
 class DecisionApplier
 {
     public function __construct(
         private SettingsRepositoryInterface $settings,
         private LoggerInterface $logger,
-        private Flagger $flagger
+        private Flagger $flagger,
+        private NotificationSyncer $notifications,
+        private Queue $queue
     ) {
     }
 
@@ -23,17 +32,22 @@ class DecisionApplier
     {
         $actions = is_array($log->actions) ? $log->actions : [];
 
-        // If only 'review' - flag for manual review, no auto-action
+        // If only 'review' or 'suicide_alert' - flag for manual review, no auto-action
         $hasAutoAction = false;
-        foreach (['hide', 'suspend', 'rename', 'delete_avatar', 'reset_nickname', 'reset_bio', 'delete_cover'] as $a) {
+        foreach (['hide', 'delete', 'suspend', 'rename', 'delete_avatar', 'reset_nickname', 'reset_bio', 'delete_cover'] as $a) {
             if (in_array($a, $actions, true)) {
                 $hasAutoAction = true;
                 break;
             }
         }
 
-        if (!$hasAutoAction && in_array('review', $actions, true)) {
-            $this->flagger->flagForReview($subject, $log);
+        if (!$hasAutoAction && (in_array('review', $actions, true) || in_array('suicide_alert', $actions, true))) {
+            if (in_array('suicide_alert', $actions, true)) {
+                $this->handleSuicideAlert($subject, $log);
+            }
+            if (in_array('review', $actions, true)) {
+                $this->flagger->flagForReview($subject, $log);
+            }
             return;
         }
 
@@ -41,6 +55,7 @@ class DecisionApplier
         foreach ($actions as $action) {
             match ($action) {
                 'hide' => $this->hideSubject($subject),
+                'delete' => $this->deleteSubject($subject),
                 'suspend' => $this->suspendOwner($owner, $log),
                 'rename' => $this->renameUser($owner),
                 'delete_avatar' => $this->deleteUserAvatar($owner),
@@ -48,6 +63,7 @@ class DecisionApplier
                 'reset_bio' => $this->resetUserBio($owner),
                 'delete_cover' => $this->deleteUserCover($owner),
                 'flag' => $this->flagger->flagForReview($subject, $log),
+                'suicide_alert' => $this->handleSuicideAlert($subject, $log),
                 default => null,
             };
         }
@@ -59,10 +75,22 @@ class DecisionApplier
     }
 
     /**
-     * Hide a post or discussion by setting is_approved = false.
+     * Hide a post, discussion, or dialog message.
      */
     private function hideSubject($subject): void
     {
+        if ($subject instanceof DialogMessage) {
+            try {
+                $subject->setAttribute('content', '');
+                $subject->setAttribute('user_id', null);
+                $subject->save();
+                $this->logger->info('[AI Audit] hidden dialog message', ['id' => $subject->id]);
+            } catch (\Exception $e) {
+                $this->logger->warning('[AI Audit] failed to hide dialog message', ['error' => $e->getMessage()]);
+            }
+            return;
+        }
+
         if (($subject instanceof Post || $subject instanceof Discussion) && $this->supportsApproval($subject)) {
             try {
                 $subject->setAttribute('is_approved', false);
@@ -73,6 +101,21 @@ class DecisionApplier
                 ]);
             } catch (\Exception $e) {
                 $this->logger->warning('[AI Audit] failed to hide subject', ['error' => $e->getMessage()]);
+            }
+        }
+    }
+
+    /**
+     * Delete a subject entirely (used for dialog messages).
+     */
+    private function deleteSubject($subject): void
+    {
+        if ($subject instanceof DialogMessage) {
+            try {
+                $subject->delete();
+                $this->logger->info('[AI Audit] deleted dialog message', ['id' => $subject->id]);
+            } catch (\Exception $e) {
+                $this->logger->warning('[AI Audit] failed to delete dialog message', ['error' => $e->getMessage()]);
             }
         }
     }
@@ -199,6 +242,79 @@ class DecisionApplier
             $this->logger->info('[AI Audit] deleted cover for user', ['user_id' => $user->id]);
         } catch (\Exception $e) {
             $this->logger->warning('[AI Audit] failed to delete cover', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle a suicide/self-harm alert - flag for admin intervention without punishing the user.
+     */
+    private function handleSuicideAlert($subject, AuditLog $log): void
+    {
+        $flag = $this->flagger->flagForReview($subject, $log);
+        if ($flag) {
+            try {
+                $flag->setAttribute('type', 'suicide_alert');
+                $flag->setAttribute('reason', '检测到自杀/自残倾向 - 请管理员及时介入');
+                $flag->save();
+            } catch (\Exception $e) {
+                $this->logger->warning('[AI Audit] failed to update suicide alert flag', ['error' => $e->getMessage()]);
+            }
+        }
+
+        $this->logger->critical('[AI Audit] SUICIDE ALERT detected', [
+            'log_id' => $log->id,
+            'subject_type' => $log->subject_type,
+            'subject_id' => $log->subject_id,
+            'owner_id' => $log->owner_id,
+            'conclusion' => $log->conclusion,
+        ]);
+
+        // 1. Send notification to the affected user (triggers frontend modal)
+        try {
+            $owner = $log->owner_id ? User::find($log->owner_id) : null;
+            if ($owner) {
+                $selfBlueprint = new SuicideSelfAlertBlueprint($log, $owner);
+                $this->notifications->sync($selfBlueprint, [$owner]);
+                $this->logger->info('[AI Audit] suicide self-alert notification sent', ['user_id' => $owner->id]);
+            }
+        } catch (\Exception $e) {
+            $this->logger->warning('[AI Audit] failed to send self-alert notification', ['error' => $e->getMessage()]);
+        }
+
+        // 2. Notify all users in admin group or with view_audit_logs permission
+        try {
+            $adminGroupId = defined(Group::class . '::ADMINISTRATOR_ID') ? Group::ADMINISTRATOR_ID : 1;
+            $admins = User::whereHas('groups', function ($q) use ($adminGroupId) {
+                $q->where('group_id', $adminGroupId)
+                  ->orWhereIn('group_id', function ($sub) {
+                      $sub->select('group_id')
+                          ->from('group_permission')
+                          ->where('permission', 'zephyrisle-ai-audit.viewAuditLogs');
+                  });
+            })->get();
+
+            if ($admins->isNotEmpty()) {
+                $adminBlueprint = new AuditNotificationBlueprint($log, $admins->first());
+                $this->notifications->sync($adminBlueprint, $admins->all());
+                $this->logger->info('[AI Audit] admin suicide alert sent', ['admin_count' => $admins->count()]);
+            }
+        } catch (\Exception $e) {
+            $this->logger->warning('[AI Audit] failed to send admin notification', ['error' => $e->getMessage()]);
+        }
+
+        // 3. Queue echo message (1 minute delay)
+        try {
+            if ($log->owner_id) {
+                $echoJob = new SuicideEchoJob(
+                    $log->owner_id,
+                    $log->actor_id,
+                    $log->conclusion
+                );
+                $this->queue->later(60, $echoJob);
+                $this->logger->info('[AI Audit] suicide echo queued', ['owner_id' => $log->owner_id]);
+            }
+        } catch (\Exception $e) {
+            $this->logger->warning('[AI Audit] failed to queue echo job', ['error' => $e->getMessage()]);
         }
     }
 

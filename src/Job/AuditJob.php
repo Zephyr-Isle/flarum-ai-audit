@@ -3,6 +3,7 @@
 namespace ZephyrIsle\AiAudit\Job;
 
 use Flarum\Discussion\Discussion;
+use Flarum\Messages\DialogMessage;
 use Flarum\Notification\NotificationSyncer;
 use Flarum\Post\Post;
 use Flarum\Queue\AbstractJob;
@@ -144,6 +145,7 @@ class AuditJob extends AbstractJob
                 'user_username', 'user_avatar', 'user_nickname',
                 'user_bio', 'user_cover',
             ]) => User::findOrFail($this->subjectId),
+            $this->subjectType === 'dialog_message' => DialogMessage::findOrFail($this->subjectId),
             default => throw new \RuntimeException('unknown_subject_type'),
         };
     }
@@ -170,6 +172,10 @@ class AuditJob extends AbstractJob
             return $subject->user;
         }
 
+        if ($subject instanceof DialogMessage) {
+            return $subject->user;
+        }
+
         return null;
     }
 
@@ -191,6 +197,7 @@ class AuditJob extends AbstractJob
                 'user_cover' => $snapshots->forUserCover($subject, $this->changes),
                 default => $snapshots->forUser($subject, $this->changes),
             },
+            $subject instanceof DialogMessage => $snapshots->forDialogMessage($subject, $this->changes),
             default => throw new \RuntimeException('unsupported_subject'),
         };
     }

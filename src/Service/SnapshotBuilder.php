@@ -3,6 +3,7 @@
 namespace ZephyrIsle\AiAudit\Service;
 
 use Flarum\Discussion\Discussion;
+use Flarum\Messages\DialogMessage;
 use Flarum\Post\CommentPost;
 use Flarum\Post\Post;
 use Flarum\Settings\SettingsRepositoryInterface;
@@ -288,6 +289,41 @@ class SnapshotBuilder
                 'discussion_id' => $discussion->id,
             ],
             'images' => [],
+        ];
+    }
+
+    /**
+     * Build a snapshot for a dialog message (flarum/messages).
+     */
+    public function forDialogMessage(DialogMessage $message, array $changes): array
+    {
+        $raw = (string) $message->content;
+        $text = $this->normalizeText($raw);
+
+        $participants = [];
+        if ($message->dialog && method_exists($message->dialog, 'users')) {
+            foreach ($message->dialog->users as $user) {
+                $participants[] = [
+                    'id' => $user->id,
+                    'username' => $user->username,
+                ];
+            }
+        }
+
+        return [
+            'subject_type' => 'dialog_message',
+            'subject_id' => $message->id,
+            'content' => [
+                'text' => $this->truncate($text),
+            ],
+            'context' => [
+                'dialog_id' => $message->dialog_id,
+                'sender_id' => $message->user_id,
+                'sender_username' => $message->user?->username,
+                'participants' => $participants,
+                'message_number' => $message->number,
+            ],
+            'images' => $this->extractAndMaybeFetchImages($raw),
         ];
     }
 

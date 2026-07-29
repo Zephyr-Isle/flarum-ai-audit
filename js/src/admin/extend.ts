@@ -104,6 +104,11 @@ export default [
       type: 'switch',
     }))
     .setting(() => ({
+      setting: 'zephyrisle.ai-audit.enable_message_audit',
+      label: t('zephyrisle-ai-audit.admin.settings.enable_message_audit'),
+      type: 'switch',
+    }))
+    .setting(() => ({
       setting: 'zephyrisle.ai-audit.enable_notifications',
       label: t('zephyrisle-ai-audit.admin.settings.enable_notifications'),
       type: 'switch',

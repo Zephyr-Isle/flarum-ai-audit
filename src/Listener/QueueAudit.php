@@ -32,6 +32,14 @@ class QueueAudit
         $events->listen(UserSaving::class, [$this, 'onUserSaving']);
         $events->listen(AvatarSaving::class, [$this, 'onAvatarSaving']);
 
+        // flarum/messages events
+        if (class_exists('Flarum\Messages\DialogMessage\Event\Created')) {
+            $events->listen('Flarum\Messages\DialogMessage\Event\Created', [$this, 'onDialogMessageCreated']);
+        }
+        if (class_exists('Flarum\Messages\DialogMessage\Event\Updated')) {
+            $events->listen('Flarum\Messages\DialogMessage\Event\Updated', [$this, 'onDialogMessageUpdated']);
+        }
+
         // fof/upload event
         if (class_exists('FoF\Upload\Event\FileWasUploaded')) {
             $events->listen('FoF\Upload\Event\FileWasUploaded', [$this, 'onFileUploaded']);
@@ -212,6 +220,39 @@ class QueueAudit
     }
 
     // ================================================================
+    //  DIALOG MESSAGES (flarum/messages)
+    // ================================================================
+
+    public function onDialogMessageCreated(object $event): void
+    {
+        if (!$this->isEnabled('message')) return;
+
+        $message = $event->message;
+        $actor = null;
+
+        if ($this->canBypass($message->user)) return;
+
+        $this->queueAudit('dialog_message', $message->id, $message->user_id, $message->user_id, [
+            'content' => $message->content,
+            'dialog_id' => $message->dialog_id,
+        ]);
+    }
+
+    public function onDialogMessageUpdated(object $event): void
+    {
+        if (!$this->isEnabled('message')) return;
+
+        $message = $event->message;
+
+        if ($this->canBypass($message->user)) return;
+
+        $this->queueAudit('dialog_message', $message->id, $message->user_id, $message->user_id, [
+            'content' => $message->content,
+            'dialog_id' => $message->dialog_id,
+        ]);
+    }
+
+    // ================================================================
     //  FILE UPLOADS (fof/upload)
     // ================================================================
 
@@ -290,6 +331,7 @@ class QueueAudit
             'post_image' => 'zephyrisle.ai-audit.enable_post_image_audit',
             'discussion_title' => 'zephyrisle.ai-audit.enable_discussion_title_audit',
             'upload' => 'zephyrisle.ai-audit.enable_upload_audit',
+            'message' => 'zephyrisle.ai-audit.enable_message_audit',
         ];
 
         $key = $keyMap[$type] ?? null;

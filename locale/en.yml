@@ -23,6 +23,7 @@ zephyrisle-ai-audit:
       enable_post_image_audit: Audit external images in posts
       enable_discussion_title_audit: Audit discussion/topic titles
       enable_upload_audit: Audit uploaded files (fof/upload)
+      enable_message_audit: Audit private messages (flarum/messages)
       enable_notifications: Send notifications to users on content action
       enable_context: Include conversation context (OP content) in analysis
 
@@ -111,11 +112,13 @@ zephyrisle-ai-audit:
       post_content: Post Content
       post_image: Image
       upload_file: File
+      dialog_message: Private Message
 
     action_labels:
       none: No action
       review: Flagged for review
       hide: Content hidden
+      delete: Message deleted
       suspend: Account suspended
       rename: Username renamed
       delete_avatar: Avatar deleted
@@ -123,3 +126,15 @@ zephyrisle-ai-audit:
       reset_bio: Bio reset
       delete_cover: Cover deleted
       flag: Flagged
+      suicide_alert: Suicide/Self-harm Alert
+
+  forum:
+    suicide_warm_modal:
+      title: A Quiet Word for You
+      message: "Hi there, we noticed your recent message seemed to carry some distress.\n\nYour feelings matter, and they are valid.\n\nWhatever you're going through, please remember — you are not alone."
+      encouragement: Things will get better. Give yourself a gentle hug.
+      resources_title: If you need someone to talk to:
+      resource_line1: "Crisis Text Line: Text HOME to 741741"
+      resource_line2: "National Suicide Prevention Lifeline: 1-800-273-8255"
+      resource_line3: Reach out to a trusted friend or your forum admin
+      dismiss: I'm okay, thank you

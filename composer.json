@@ -17,7 +17,8 @@
         "flarum/nicknames": "For auditing user nickname changes",
         "fof/user-bio": "For auditing user bio/signature changes",
         "fof/upload": "For auditing uploaded file content",
-        "forumaker/profile-cover": "For auditing profile cover image changes"
+        "forumaker/profile-cover": "For auditing profile cover image changes",
+        "flarum/messages": "For sending system echo messages on suicide alert"
     },
     "autoload": {
         "psr-4": {
@@ -38,6 +39,7 @@
             "category": "moderation",
             "optional-dependencies": [
                 "flarum/flags",
+                "flarum/messages",
                 "flarum/nicknames",
                 "fof/user-bio",
                 "fof/upload",

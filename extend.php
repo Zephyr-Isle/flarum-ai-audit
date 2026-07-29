@@ -10,6 +10,7 @@ use ZephyrIsle\AiAudit\Api\Controller\ShowAuditLogController;
 use ZephyrIsle\AiAudit\Listener\QueueAudit;
 use ZephyrIsle\AiAudit\Model\AuditLog;
 use ZephyrIsle\AiAudit\Notification\AuditNotificationBlueprint;
+use ZephyrIsle\AiAudit\Notification\SuicideSelfAlertBlueprint;
 use ZephyrIsle\AiAudit\Provider\AiAuditServiceProvider;
 
 return [
@@ -40,6 +41,10 @@ return [
     (new Extend\Notification())
         ->type(
             AuditNotificationBlueprint::class,
+            ['alert']
+        )
+        ->type(
+            SuicideSelfAlertBlueprint::class,
             ['alert']
         ),
 
@@ -73,6 +78,7 @@ return [
         ->default('zephyrisle.ai-audit.enable_post_image_audit', true)
         ->default('zephyrisle.ai-audit.enable_discussion_title_audit', true)
         ->default('zephyrisle.ai-audit.enable_upload_audit', true)
+        ->default('zephyrisle.ai-audit.enable_message_audit', true)
         ->default('zephyrisle.ai-audit.enable_notifications', true)
         ->default('zephyrisle.ai-audit.enable_context', true)
         ->default('zephyrisle.ai-audit.use_json_schema', true)

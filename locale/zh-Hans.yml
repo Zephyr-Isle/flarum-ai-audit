@@ -23,6 +23,7 @@ zephyrisle-ai-audit:
       enable_post_image_audit: 审核帖子中的外部图片
       enable_discussion_title_audit: 审核主题标题
       enable_upload_audit: 审核上传文件 (fof/upload)
+      enable_message_audit: 审核私信消息 (flarum/messages)
       enable_notifications: 违规时向用户发送通知
       enable_context: 分析时包含对话上下文（主帖内容）
 
@@ -111,11 +112,13 @@ zephyrisle-ai-audit:
       post_content: 帖子内容
       post_image: 图片
       upload_file: 文件
+      dialog_message: 私信消息
 
     action_labels:
       none: 无操作
       review: 标记待审核
       hide: 内容已隐藏
+      delete: 消息已删除
       suspend: 账号已封禁
       rename: 用户名已重命名
       delete_avatar: 头像已删除
@@ -123,3 +126,15 @@ zephyrisle-ai-audit:
       reset_bio: 签名已重置
       delete_cover: 封面图已删除
       flag: 已标记
+      suicide_alert: 自杀/自残预警
+
+  forum:
+    suicide_warm_modal:
+      title: 给你的悄悄话
+      message: "嗨，我们注意到你刚才的发言似乎透露了一些不安的情绪。\n\n你的感受很重要，也很真实。\n\n无论你正在经历什么，请记住——你并不孤单。"
+      encouragement: 一切都会好起来的。请给自己一个温柔的拥抱。
+      resources_title: 如果你需要倾诉，这里有些资源可以帮到你：
+      resource_line1: "希望 24 热线：400-161-9995"
+      resource_line2: "全国生命危机干预热线：010-82951332"
+      resource_line3: 也可以和你信任的亲友聊聊，或联系论坛管理员
+      dismiss: 我没事，谢谢你

@@ -83,14 +83,18 @@ class AuditClient
         $severity = max(0, min(3, $severity));
 
         $actions = ['none'];
+        $hasSuicideSignal = in_array('suicide_ideation', $signals['hits'] ?? [], true);
+
         if ($risk >= $reviewThreshold) {
-            $actions = ['review'];
+            // For suicide signals, always alert regardless of threshold
+            $actions = $hasSuicideSignal ? ['suicide_alert'] : ['review'];
         }
         if ($risk >= $actionThreshold) {
-            // Use LLM-suggested actions if available, otherwise use defaults
             $suggestedActions = $llm['actions'] ?? null;
             if (is_array($suggestedActions) && !empty($suggestedActions)) {
                 $actions = $suggestedActions;
+            } elseif ($hasSuicideSignal) {
+                $actions = ['suicide_alert'];
             } else {
                 $actions = ['hide'];
                 if ($severity >= 3 || $risk >= min(0.95, $actionThreshold + 0.2)) {
@@ -260,6 +264,7 @@ class AuditClient
                                         'none',
                                         'review',
                                         'hide',
+                                        'delete',
                                         'suspend',
                                         'rename',
                                         'delete_avatar',
@@ -267,6 +272,7 @@ class AuditClient
                                         'reset_bio',
                                         'delete_cover',
                                         'flag',
+                                        'suicide_alert',
                                     ],
                                 ],
                             ],
@@ -336,7 +342,7 @@ class AuditClient
         $rawActions = $obj['actions'] ?? null;
         $actions = null;
         if (is_array($rawActions) && !empty($rawActions)) {
-            $validActions = ['none', 'review', 'hide', 'suspend', 'rename', 'delete_avatar', 'reset_nickname', 'reset_bio', 'delete_cover', 'flag'];
+            $validActions = ['none', 'review', 'hide', 'delete', 'suspend', 'rename', 'delete_avatar', 'reset_nickname', 'reset_bio', 'delete_cover', 'flag', 'suicide_alert'];
             $actions = array_values(array_intersect($rawActions, $validActions));
         }
 
@@ -397,6 +403,7 @@ class AuditClient
 - none: 无违规，内容正常
 - review: 需要人工复核
 - hide: 隐藏内容（设为未审核通过）
+- delete: 删除消息（私信消息违规时删除该消息）
 - suspend: 封禁用户账号
 - rename: 重命名用户（严重违规时使用）
 - delete_avatar: 删除用户头像
@@ -404,6 +411,7 @@ class AuditClient
 - reset_bio: 重置用户签名为空
 - delete_cover: 删除用户封面图
 - flag: 标记内容供管理员审查
+- suicide_alert: 检测到自杀/自残倾向，需立即通知管理员介入（不会处罚用户）
 
 规则：
 - 如果内容正常，只返回 ["none"]
@@ -412,6 +420,12 @@ class AuditClient
 - 如果严重违规（暴力、色情、人肉搜索等），返回 ["hide", "suspend"]
 - 用户资料（用户名、昵称、头像、签名）违规：返回对应删除/重置动作
 - 始终基于风险值和严重程度做出合理判断
+
+自杀/自残检测（重要）：
+- 如果用户表达出自杀意图、自残倾向或严重的绝望情绪，返回 ["suicide_alert"]
+- 注意区分玩笑话与真实求助，对有真实风险的应优先标记
+- suicide_alert 不会隐藏或删除内容，仅通知管理员及时介入提供帮助
+- 如果内容同时存在自杀倾向和违规行为，可以合并动作如 ["suicide_alert", "hide"]
 
 输出要求：
 1) 只输出一个 JSON 对象，不要输出其他文字。
@@ -431,6 +445,7 @@ PROMPT;
             'post_content' => "\n\n当前审核类型：帖子内容。注意内容是否包含违规信息、广告、人身攻击、色情等。",
             'post_image' => "\n\n当前审核类型：帖子图片。注意图片是否包含违规内容。",
             'upload_file' => "\n\n当前审核类型：上传文件。注意文件描述是否包含违规内容。",
+            'dialog_message' => "\n\n当前审核类型：私信消息。注意消息是否包含违规信息、广告、骚扰、色情等。私信消息的违规处理建议：轻微违规用 review，明显违规用 delete 删除消息，严重违规用 delete+suspend 删除消息并封禁用户。",
             default => '',
         };
 
@@ -458,6 +473,10 @@ PROMPT;
         if (preg_match('/(?:下注|博彩|赌场|外围|彩票)/iu', $text)) $hit('gambling', 0.30);
         if (preg_match('/(?:裸聊|约炮|成人视频|色情网|看片)/iu', $text)) $hit('sexual', 0.34);
         if (preg_match('/(?:杀了你|弄死你|我杀|炸死|爆炸)/iu', $text)) $hit('violence_threat', 0.40);
+
+        // Suicide / self-harm detection
+        if (preg_match('/(?:自杀|轻生|自残|割腕|上吊|跳楼|厌世|遗书|不想活了|活不下去|不想活啦|结束生命|告别这个世界|最后(?:的)?(?:时光|旅程|一程)|没有(?:活下去|生存)的(?:勇气|希望|意义)|一死了之|想不开想死|想结束自己的生命|对(?:生活|人生|世界)失去了(?:希望|信心))/iu', $text)) $hit('suicide_ideation', 0.32);
+        if (preg_match('/\b(kill\s+myself|committed?\s+suicide|suicide|suicidal|self[\-\s]harm\b|end\s+my\s+life|want\s+to\s+die|better\s+off\s+dead|no\s+reason\s+to\s+live)\b/i', $text)) $hit('suicide_ideation', 0.32);
 
         $spam = $this->spamScore($lower);
         if ($spam > 0.0) $hit('spam_style', $spam);
