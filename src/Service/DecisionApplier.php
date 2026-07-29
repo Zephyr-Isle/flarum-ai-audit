@@ -10,9 +10,7 @@ use Flarum\Notification\NotificationSyncer;
 use Flarum\Post\Post;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\User;
-use Illuminate\Contracts\Queue\Queue;
 use Psr\Log\LoggerInterface;
-use ZephyrIsle\AiAudit\Job\SuicideEchoJob;
 use ZephyrIsle\AiAudit\Model\AuditLog;
 use ZephyrIsle\AiAudit\Notification\AuditNotificationBlueprint;
 use ZephyrIsle\AiAudit\Notification\SuicideSelfAlertBlueprint;
@@ -23,8 +21,7 @@ class DecisionApplier
         private SettingsRepositoryInterface $settings,
         private LoggerInterface $logger,
         private Flagger $flagger,
-        private NotificationSyncer $notifications,
-        private Queue $queue
+        private NotificationSyncer $notifications
     ) {
     }
 
@@ -302,20 +299,6 @@ class DecisionApplier
             $this->logger->warning('[AI Audit] failed to send admin notification', ['error' => $e->getMessage()]);
         }
 
-        // 3. Queue echo message (1 minute delay)
-        try {
-            if ($log->owner_id) {
-                $echoJob = new SuicideEchoJob(
-                    $log->owner_id,
-                    $log->actor_id,
-                    $log->conclusion
-                );
-                $this->queue->later(60, $echoJob);
-                $this->logger->info('[AI Audit] suicide echo queued', ['owner_id' => $log->owner_id]);
-            }
-        } catch (\Exception $e) {
-            $this->logger->warning('[AI Audit] failed to queue echo job', ['error' => $e->getMessage()]);
-        }
     }
 
     private function supportsApproval($model): bool

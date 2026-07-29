@@ -30,8 +30,7 @@ class AiAuditServiceProvider extends AbstractServiceProvider
                 $container->make('flarum.settings'),
                 $container->make('log'),
                 $container->make(Flagger::class),
-                $container->make(NotificationSyncer::class),
-                $container->make(\Illuminate\Contracts\Queue\Queue::class)
+                $container->make(NotificationSyncer::class)
             );
         });
     }
